@@ -22,8 +22,16 @@ main_window.resizable(False , False)
 # main_window.wm_attributes('-toolwindow', True) # This makes the simple titleabr with only the close button and no minimize button 
 
 
+### Defining the controls : 
+website_url  = ctk.CTkEntry(master=main_window)
+scrap_button  = ctk.CTkButton(master = main_window , text="Start Scrapping")
 
 
+
+
+### Placing the Controls : 
+website_url.pack()
+scrap_button.pack()
 
 
 
