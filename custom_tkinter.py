@@ -14,7 +14,7 @@ def custom_print(check_box_command):
 
 
 ctk.set_appearance_mode("light")  # Modes: system (default), light, dark
-ctk.set_default_color_theme("blue") 
+ctk.set_default_color_theme("green") 
 
 
 # Setting main app along with the title and the iconf or the app : 
@@ -78,16 +78,23 @@ scrollable_frame = ctk.CTkScrollableFrame(main_window, width=752, height=480)
 scrollable_frame.grid(row = 2 , column  = 0 , columnspan  = 5 ,  rowspan  = 5 , sticky = "NS")
 
 
-
 style = ttk.Style()
-style.configure('1', background='red')
+style.configure('Custom.Treeview', background='lightblue', foreground='black', rowheight=30)
 
 
+tree = ttk.Treeview(scrollable_frame , height=25 , columns = ("S.no" , "File Name" , "Status") , show='headings' , style='custom.Treeview')
 
-tree = ttk.Treeview(scrollable_frame , height=400  )
+tree.heading('S.no' , text="S.no")
+tree.heading('#1' , text="File Name")
+tree.heading('#2' , text = "Status")
+tree.heading('#3' , text = "Finished Date")
 
+
+tree.tag_configure('custom.Treeview' , background='black')
 tree.pack( expand=True , fill='both')
 
+# for i in range(100):
+#     tree.insert('' ,'end' , values = ('values1' , 'value2' , 'values 3' , 'values 4'))
 
 
 
