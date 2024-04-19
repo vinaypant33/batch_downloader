@@ -1,19 +1,10 @@
-import tkinter as tk
-from tkinter import ttk
 import customtkinter as ctk
-import ttkbootstrap as tttk
-
-from ttkbootstrap.tableview import Tableview
-from ttkbootstrap.constants import *
-
 from PIL import Image, ImageTk
+from tkinter import ttk
 
 
 
-'''
-pip install CTkTable
-This workaround for adding the data in the table format 
-'''
+
 
 # Functions for the main application : 
 
@@ -22,7 +13,7 @@ def custom_print(check_box_command):
 
 
 
-ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
+ctk.set_appearance_mode("light")  # Modes: system (default), light, dark
 ctk.set_default_color_theme("blue") 
 
 
@@ -30,6 +21,8 @@ ctk.set_default_color_theme("blue")
 main_window  = ctk.CTk()
 main_window.title("Batch Downloader")
 # Setting up the icon later : 
+
+
 
 # Setting default app size for the main app : 
 main_window.geometry("800x600")
@@ -63,18 +56,10 @@ audio_checkbox  = ctk.CTkCheckBox(master = options_frame , text="Mp3 Audio" , co
 png_images_checkbox  = ctk.CTkCheckBox(master=options_frame  , text="PNG Images" , command=lambda  :custom_print("Png Images"), variable=png_images_check_var,
                                        onvalue='on' , offvalue='off')
 
+style1 = ttk.Style()
+style1.configure("my.style", background="green")
 
 
-
-# Tabview for saving the file names and saving the data in the internal drive : 
-
-# tabview  = ctk.CTkTabview(master=main_window , width = 760 , height= 470)
-col_data  = [{
-    "text" : "S.No" 
-} , "Company Name"  ,{'text' : "User Count" , },]
-
-
-# table_view  = Tableview(master=main_window , coldata=col_data , paginated=False , searchable=False , bootstyle=PRIMARY , stripecolor="green" )
 
 
 ### Placing the Controls : 
@@ -86,10 +71,22 @@ video_checkbox.pack(side= 'left' , padx= 10)
 audio_checkbox.pack(side = 'left' ,padx = 10)
 png_images_checkbox.pack(side = 'left'  ,padx = 10)
 
-# table_view.grid(row = 2 , column= 0 , columnspan= 5 , sticky="NS")
 
 
-# tabview.grid(row = 2 , column = 0  , columnspan  = 5 , sticky  = "NS"
+
+scrollable_frame = ctk.CTkScrollableFrame(main_window, width=752, height=480)
+scrollable_frame.grid(row = 2 , column  = 0 , columnspan  = 5 ,  rowspan  = 5 , sticky = "NS")
+
+
+
+style = ttk.Style()
+style.configure('1', background='red')
+
+
+
+tree = ttk.Treeview(scrollable_frame , height=400  )
+
+tree.pack( expand=True , fill='both')
 
 
 
