@@ -6,6 +6,20 @@ import ttkbootstrap as ttk
 
 from PIL import Image, ImageTk
 
+# Functions for the main application : 
+
+def custom_print():
+    print("I am being called")
+
+
+
+
+
+
+
+
+
+
 ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
 ctk.set_default_color_theme("blue") 
 
@@ -31,22 +45,38 @@ HEIGHT = main_window.winfo_height()
 
 
 ### Defining the controls : 
-upper_panel  = tk.PanedWindow(master = main_window , width=WIDTH)
-website_url  = ctk.CTkEntry(master=upper_panel)
-scrap_button  = ctk.CTkButton(master = upper_panel , text="Start Scrapping")
 
-middle_panel  =tk.PanedWindow(master=main_window , width=WIDTH , background="green")
+website_url  = ctk.CTkEntry(master=main_window, width=640 , placeholder_text="Enter Website Url for Scrapping")
+scrap_button  = ctk.CTkButton(master = main_window , text="Start Scrapping")
+
+# Settings under this options frame 
+options_frame  = ctk.CTkFrame(master=main_window , height = 50 , width = 780)
+options_frame.pack_propagate(0)
+
+
+video_check_var = ctk.StringVar(value="off")
+audio_check_var  = ctk.StringVar(value = "off")
+
+
+
+video_checkbox = ctk.CTkCheckBox(master = options_frame, text="Download Videos", command=custom_print,
+                                     variable=video_check_var, onvalue="on", offvalue="off")
+
+audio_checkbox  = ctk.CTkCheckBox(master = options_frame , text="Download Audio" , command=custom_print, variable=audio_check_var,
+                                  onvalue="on" , offvalue="off")
 
 
 
 
 ### Placing the Controls : 
-upper_panel.pack(side="top" , expand='y', padx=2 , pady=2)
-website_url.pack()
-scrap_button.pack()
+website_url.grid(row = 0  , column = 0 , padx = 5 , pady = 10)
+scrap_button.grid(row = 0 , column = 1 , padx = 5 , pady = 10)
+
+options_frame.grid( row = 1 , column  = 0 ,padx= 5 , pady = 5 , columnspan = 4)
 
 
-
+video_checkbox.pack(side= 'left' , padx= 10)
+audio_checkbox.pack(side = 'left' ,padx = 10)
 
 # Running the main app: 
 main_window.mainloop()
