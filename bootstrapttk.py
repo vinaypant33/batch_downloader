@@ -33,7 +33,7 @@ zip_button  = ttk.Checkbutton(master=options_frame , text="Zip Files" , bootstyl
 
 
 # Progress Bar for the main Url : 
-progress_bar  = ttk.Progressbar(master=main_app , bootstyle = "success"  , value=10 , length=534)
+progress_bar  = ttk.Progressbar(master=main_app , bootstyle = "success"  , value=1 , length=534)
 
 
 
