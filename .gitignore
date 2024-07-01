@@ -1,1 +1,12 @@
-other
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+
+# downloads made while trying the app
+downloads/
+*.part
+.batch_downloader.sqlite
