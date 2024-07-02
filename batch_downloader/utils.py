@@ -18,3 +18,11 @@ def human_size(num_bytes):
 def now_iso():
     """Current local time as 'YYYY-MM-DD HH:MM:SS'."""
     return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def shorten(text, width=60):
+    """Shorten long text in the middle: 'https://site/very…/file.pdf'."""
+    if len(text) <= width:
+        return text
+    keep = (width - 1) // 2
+    return text[:keep] + "…" + text[-(width - 1 - keep):]
