@@ -13,3 +13,8 @@ def human_size(num_bytes):
             return f"{size:.0f} {unit}" if unit == "B" else f"{size:.1f} {unit}"
         size /= 1024
     return f"{size:.1f} TB"  # pragma: no cover
+
+
+def now_iso():
+    """Current local time as 'YYYY-MM-DD HH:MM:SS'."""
+    return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
