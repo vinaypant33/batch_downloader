@@ -27,3 +27,16 @@ def normalize(url, base=None):
         netloc = f"{host}:{parts.port}"
     path = parts.path or "/"
     return urlunparse((scheme, netloc, path, parts.params, parts.query, ""))
+
+
+def host_of(url):
+    """Host without 'www.' and with the port, used to compare sites."""
+    parts = urlparse(url)
+    host = (parts.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return f"{host}:{parts.port}" if parts.port else host
+
+
+def same_site(a, b):
+    return host_of(a) == host_of(b)
