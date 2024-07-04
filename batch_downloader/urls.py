@@ -49,3 +49,8 @@ def looks_like_page(url):
     if "." not in last:
         return True
     return "." + last.rsplit(".", 1)[-1] in PAGE_EXTENSIONS
+
+
+def robots_url(url):
+    parts = urlparse(url)
+    return urlunparse((parts.scheme, parts.netloc, "/robots.txt", "", "", ""))
