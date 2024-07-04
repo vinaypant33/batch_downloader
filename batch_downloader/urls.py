@@ -40,3 +40,12 @@ def host_of(url):
 
 def same_site(a, b):
     return host_of(a) == host_of(b)
+
+
+def looks_like_page(url):
+    """True when a URL probably points at an HTML page rather than a file."""
+    path = urlparse(url).path.lower()
+    last = path.rsplit("/", 1)[-1]
+    if "." not in last:
+        return True
+    return "." + last.rsplit(".", 1)[-1] in PAGE_EXTENSIONS
