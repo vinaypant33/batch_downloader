@@ -24,3 +24,18 @@ class FileFilter:
             raise ValueError("size limits cannot be negative")
         if self.max_bytes and self.min_bytes > self.max_bytes:
             raise ValueError("min_bytes is larger than max_bytes")
+
+    @staticmethod
+    def name_of(url):
+        return PurePosixPath(unquote(urlparse(url).path)).name.lower()
+
+    def accepts_url(self, url):
+        """Type and name checks, done before anything is downloaded."""
+        if category_of(url) not in self.categories:
+            return False
+        name = self.name_of(url)
+        if self.include and not any(fnmatch.fnmatch(name, p.lower()) for p in self.include):
+            return False
+        if any(fnmatch.fnmatch(name, p.lower()) for p in self.exclude):
+            return False
+        return True
