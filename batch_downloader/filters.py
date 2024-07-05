@@ -39,3 +39,13 @@ class FileFilter:
         if any(fnmatch.fnmatch(name, p.lower()) for p in self.exclude):
             return False
         return True
+
+    def accepts_size(self, size):
+        """Size check, done once the server says how big a file is."""
+        if size is None:
+            return True
+        if size < self.min_bytes:
+            return False
+        if self.max_bytes and size > self.max_bytes:
+            return False
+        return True
