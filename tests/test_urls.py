@@ -9,3 +9,6 @@ class TestNormalize(unittest.TestCase):
 
     def test_fragment_is_removed(self):
         self.assertEqual(normalize("https://site.com/a.pdf#page=3"), "https://site.com/a.pdf")
+
+    def test_scheme_and_host_are_lowercased(self):
+        self.assertEqual(normalize("HTTPS://Site.COM/Path"), "https://site.com/Path")
