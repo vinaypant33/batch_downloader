@@ -12,3 +12,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_scheme_and_host_are_lowercased(self):
         self.assertEqual(normalize("HTTPS://Site.COM/Path"), "https://site.com/Path")
+
+    def test_default_port_is_dropped_other_ports_kept(self):
+        self.assertEqual(normalize("https://site.com:443/a"), "https://site.com/a")
+        self.assertEqual(normalize("http://site.com:8080/a"), "http://site.com:8080/a")
