@@ -6,3 +6,6 @@ from batch_downloader.urls import host_of, looks_like_page, normalize, robots_ur
 class TestNormalize(unittest.TestCase):
     def test_relative_link_becomes_absolute(self):
         self.assertEqual(normalize("docs/a.pdf", "https://site.com/x/"), "https://site.com/x/docs/a.pdf")
+
+    def test_fragment_is_removed(self):
+        self.assertEqual(normalize("https://site.com/a.pdf#page=3"), "https://site.com/a.pdf")
