@@ -32,3 +32,9 @@ class TestSites(unittest.TestCase):
         self.assertTrue(same_site("https://www.site.com/a", "https://site.com/b"))
         self.assertFalse(same_site("https://site.com/a", "https://other.com/a"))
         self.assertEqual(host_of("http://www.Site.com:8080/x"), "site.com:8080")
+
+    def test_looks_like_page(self):
+        self.assertTrue(looks_like_page("https://s.com/blog/"))
+        self.assertTrue(looks_like_page("https://s.com/about.html"))
+        self.assertTrue(looks_like_page("https://s.com/list.php?p=2"))
+        self.assertFalse(looks_like_page("https://s.com/file.pdf"))
