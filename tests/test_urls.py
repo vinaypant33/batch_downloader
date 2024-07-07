@@ -21,3 +21,7 @@ class TestNormalize(unittest.TestCase):
         for link in ("mailto:a@b.com", "javascript:void(0)", "ftp://site.com/f", "data:text/plain,hi", "", None):
             with self.subTest(link=link):
                 self.assertIsNone(normalize(link, "https://site.com/"))
+
+    def test_empty_path_becomes_slash_and_query_is_kept(self):
+        self.assertEqual(normalize("https://site.com"), "https://site.com/")
+        self.assertEqual(normalize("/get?id=7", "https://site.com/a/"), "https://site.com/get?id=7")
