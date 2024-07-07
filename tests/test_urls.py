@@ -25,3 +25,10 @@ class TestNormalize(unittest.TestCase):
     def test_empty_path_becomes_slash_and_query_is_kept(self):
         self.assertEqual(normalize("https://site.com"), "https://site.com/")
         self.assertEqual(normalize("/get?id=7", "https://site.com/a/"), "https://site.com/get?id=7")
+
+
+class TestSites(unittest.TestCase):
+    def test_www_is_the_same_site(self):
+        self.assertTrue(same_site("https://www.site.com/a", "https://site.com/b"))
+        self.assertFalse(same_site("https://site.com/a", "https://other.com/a"))
+        self.assertEqual(host_of("http://www.Site.com:8080/x"), "site.com:8080")
