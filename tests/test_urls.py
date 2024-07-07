@@ -16,3 +16,8 @@ class TestNormalize(unittest.TestCase):
     def test_default_port_is_dropped_other_ports_kept(self):
         self.assertEqual(normalize("https://site.com:443/a"), "https://site.com/a")
         self.assertEqual(normalize("http://site.com:8080/a"), "http://site.com:8080/a")
+
+    def test_non_web_links_are_rejected(self):
+        for link in ("mailto:a@b.com", "javascript:void(0)", "ftp://site.com/f", "data:text/plain,hi", "", None):
+            with self.subTest(link=link):
+                self.assertIsNone(normalize(link, "https://site.com/"))
