@@ -35,3 +35,11 @@ class RobotsCache:
         with self._lock:
             self._parsers[key] = parser
         return parser
+
+    def allowed(self, url):
+        return self._parser(url).can_fetch(self.user_agent, url)
+
+    def crawl_delay(self, url):
+        """Seconds the site asks crawlers to wait between requests, if any."""
+        delay = self._parser(url).crawl_delay(self.user_agent)
+        return float(delay) if delay else None
