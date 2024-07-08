@@ -38,3 +38,10 @@ class TestSites(unittest.TestCase):
         self.assertTrue(looks_like_page("https://s.com/about.html"))
         self.assertTrue(looks_like_page("https://s.com/list.php?p=2"))
         self.assertFalse(looks_like_page("https://s.com/file.pdf"))
+
+    def test_robots_url(self):
+        self.assertEqual(robots_url("https://s.com/a/b?x=1"), "https://s.com/robots.txt")
+
+
+if __name__ == "__main__":
+    unittest.main()
