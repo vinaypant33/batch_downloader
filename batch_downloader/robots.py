@@ -17,3 +17,21 @@ class RobotsCache:
         self.timeout = timeout
         self._parsers = {}
         self._lock = threading.Lock()
+
+    def _parser(self, url):
+        key = robots_url(url)
+        with self._lock:
+            if key in self._parsers:
+                return self._parsers[key]
+        parser = RobotFileParser()
+        try:
+            response = self.session.get(key, timeout=self.timeout, headers={"User-Agent": self.user_agent})
+            if response.status_code >= 400:
+                parser.allow_all = True       # no robots.txt: everything is allowed
+            else:
+                parser.parse(response.text.splitlines())
+        except requests.RequestException:
+            parser.allow_all = True           # unreachable: do not block the crawl
+        with self._lock:
+            self._parsers[key] = parser
+        return parser
