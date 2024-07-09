@@ -25,3 +25,20 @@ from .urls import looks_like_page, normalize, same_site
 
 USER_AGENT = "BatchDownloader/1.0 (+https://github.com/vinaypant33/batch_downloader)"
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class FoundFile:
+    url: str
+    category: str
+    page: str       # the page the link was found on
+    depth: int
+
+
+@dataclass
+class CrawlStats:
+    pages: int = 0
+    files: int = 0
+    skipped_robots: int = 0
+    skipped_offsite: int = 0
+    errors: int = 0
