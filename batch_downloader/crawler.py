@@ -115,3 +115,12 @@ class Crawler:
             self.stats.skipped_robots += 1
             return False
         return self.filter.accepts_url(url)
+
+    def _wait(self, url, first):
+        if first:
+            return
+        delay = self.delay
+        if self.robots:
+            delay = max(delay, self.robots.crawl_delay(url) or 0)
+        if delay:
+            time.sleep(delay)
