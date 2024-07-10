@@ -97,3 +97,21 @@ class Crawler:
         self.session.headers.setdefault("User-Agent", user_agent)
         self.robots = RobotsCache(self.session, user_agent) if respect_robots else None
         self.stats = CrawlStats()
+
+    def _page_allowed(self, url):
+        if self.same_site_only and not same_site(url, self.start_url):
+            self.stats.skipped_offsite += 1
+            return False
+        if self.robots and not self.robots.allowed(url):
+            self.stats.skipped_robots += 1
+            return False
+        return True
+
+    def _file_allowed(self, url):
+        if not self.offsite_files and not same_site(url, self.start_url):
+            self.stats.skipped_offsite += 1
+            return False
+        if self.robots and not self.robots.allowed(url):
+            self.stats.skipped_robots += 1
+            return False
+        return self.filter.accepts_url(url)
