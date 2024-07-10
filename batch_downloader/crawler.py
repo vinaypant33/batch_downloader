@@ -72,3 +72,28 @@ def extract_links(html, base_url):
             seen.add(url)
             result.append(url)
     return result
+
+
+class Crawler:
+    def __init__(self, start_url, depth=1, file_filter=None, same_site_only=True,
+                 offsite_files=False, delay=0.5, max_pages=200, respect_robots=True,
+                 use_sitemap=False, session=None, timeout=15, user_agent=USER_AGENT):
+        url = normalize(start_url)
+        if url is None:
+            raise ValueError(f"not a web address: {start_url!r}")
+        if depth < 0 or max_pages < 1 or delay < 0:
+            raise ValueError("depth and delay must be >= 0 and max_pages >= 1")
+        self.start_url = url
+        self.depth = depth
+        self.filter = file_filter or FileFilter()
+        self.same_site_only = same_site_only
+        self.offsite_files = offsite_files
+        self.delay = delay
+        self.max_pages = max_pages
+        self.use_sitemap = use_sitemap
+        self.timeout = timeout
+        self.user_agent = user_agent
+        self.session = session or requests.Session()
+        self.session.headers.setdefault("User-Agent", user_agent)
+        self.robots = RobotsCache(self.session, user_agent) if respect_robots else None
+        self.stats = CrawlStats()
