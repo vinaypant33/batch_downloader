@@ -42,3 +42,9 @@ class CrawlStats:
     skipped_robots: int = 0
     skipped_offsite: int = 0
     errors: int = 0
+
+
+LINK_ATTRIBUTES = (
+    ("a", "href"), ("img", "src"), ("source", "src"), ("video", "src"), ("audio", "src"),
+    ("embed", "src"), ("object", "data"), ("link", "href"), ("track", "src"),
+)
