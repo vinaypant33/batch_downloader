@@ -169,3 +169,18 @@ class Crawler:
             html = self._fetch_page(url)
             if html is None:
                 continue
+
+            for link in extract_links(html, url):
+                if category_of(link):
+                    if link not in found and self._file_allowed(link):
+                        found.add(link)
+                        item = FoundFile(link, category_of(link), url, level)
+                        files.append(item)
+                        self.stats.files += 1
+                        if on_file:
+                            on_file(item)
+                elif level < self.depth and link not in queued and looks_like_page(link):
+                    queued.add(link)
+                    queue.append((link, level + 1))
+        log.info("crawl of %s finished: %s", self.start_url, self.stats)
+        return files
