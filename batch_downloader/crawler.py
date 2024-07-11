@@ -154,3 +154,18 @@ class Crawler:
                     queue.append((page, 1))
         files, found = [], set()
         fetched = 0
+
+        while queue and fetched < self.max_pages and not should_stop():
+            url, level = queue.popleft()
+            if url != self.start_url and not self._page_allowed(url):
+                continue
+            if url == self.start_url and self.robots and not self.robots.allowed(url):
+                self.stats.skipped_robots += 1
+                break
+            self._wait(url, first=fetched == 0)
+            fetched += 1
+            if on_page:
+                on_page(url, level)
+            html = self._fetch_page(url)
+            if html is None:
+                continue
