@@ -124,3 +124,20 @@ class Crawler:
             delay = max(delay, self.robots.crawl_delay(url) or 0)
         if delay:
             time.sleep(delay)
+
+    def _fetch_page(self, url):
+        """HTML text of a page, or None if it failed or is not HTML."""
+        try:
+            response = self.session.get(url, timeout=self.timeout)
+        except requests.RequestException as error:
+            self.stats.errors += 1
+            log.warning("could not fetch %s: %s", url, error)
+            return None
+        if response.status_code >= 400:
+            self.stats.errors += 1
+            log.warning("HTTP %s for page %s", response.status_code, url)
+            return None
+        if "html" not in response.headers.get("Content-Type", "").lower():
+            return None
+        self.stats.pages += 1
+        return response.text
