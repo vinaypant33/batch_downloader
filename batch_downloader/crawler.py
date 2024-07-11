@@ -141,3 +141,16 @@ class Crawler:
             return None
         self.stats.pages += 1
         return response.text
+
+    def crawl(self, on_page=None, on_file=None, should_stop=None):
+        """Crawl and return every matching file. Callbacks report progress."""
+        should_stop = should_stop or (lambda: False)
+        queue = deque([(self.start_url, 0)])
+        queued = {self.start_url}
+        if self.use_sitemap and self.depth > 0:
+            for page in sitemap_pages(self.session, self.start_url, self.timeout):
+                if page not in queued:
+                    queued.add(page)
+                    queue.append((page, 1))
+        files, found = [], set()
+        fetched = 0
