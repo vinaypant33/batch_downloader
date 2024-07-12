@@ -18,3 +18,22 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 SITE = Path(__file__).resolve().parent / "site"
+
+
+class Handler(SimpleHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+    def do_GET(self):
+        self.server.requests[self.path.split("?")[0]] += 1
+        if self.path.startswith("/flaky/"):
+            key = self.path
+            if self.server.failures.get(key, 0) > 0:
+                self.server.failures[key] -= 1
+                self.send_error(503, "try again")
+                return
+            self.path = "/" + self.path[len("/flaky/"):]
+        if self.path.startswith("/slow/"):
+            self.path = "/" + self.path[len("/slow/"):]
+            return self.send_file(slow=True)
+        return self.send_file()
