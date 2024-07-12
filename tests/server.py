@@ -37,3 +37,42 @@ class Handler(SimpleHTTPRequestHandler):
             self.path = "/" + self.path[len("/slow/"):]
             return self.send_file(slow=True)
         return self.send_file()
+
+    def send_file(self, slow=False):
+        path = Path(self.translate_path(self.path))
+        if path.is_dir():
+            index = path / "index.html"
+            if not index.exists():
+                return super().do_GET()
+            path = index
+        if not path.exists():
+            self.send_error(404, "not found")
+            return
+        data = path.read_bytes()
+        start = 0
+        header = self.headers.get("Range", "")
+        if header.startswith("bytes=") and self.server.ranges:
+            start = int(header[6:].split("-")[0] or 0)
+            if start >= len(data):
+                self.send_response(416)
+                self.send_header("Content-Range", f"bytes */{len(data)}")
+                self.end_headers()
+                return
+            self.send_response(206)
+            self.send_header("Content-Range", f"bytes {start}-{len(data) - 1}/{len(data)}")
+        else:
+            self.send_response(200)
+        body = data[start:]
+        self.send_header("Content-Type", self.guess_type(str(path)))
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        try:
+            if slow:
+                for i in range(0, len(body), 256):
+                    self.wfile.write(body[i:i + 256])
+                    self.wfile.flush()
+                    time.sleep(0.01)
+            else:
+                self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass  # the client stopped reading (e.g. the Stop test)
