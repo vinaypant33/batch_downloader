@@ -76,3 +76,33 @@ class Handler(SimpleHTTPRequestHandler):
                 self.wfile.write(body)
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
             pass  # the client stopped reading (e.g. the Stop test)
+
+
+class TestServer:
+    def __init__(self, ranges=True):
+        handler = functools.partial(Handler, directory=os.fspath(SITE))
+        self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        self.httpd.daemon_threads = True
+        self.httpd.requests = Counter()
+        self.httpd.failures = {}
+        self.httpd.ranges = ranges
+        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
+
+    @property
+    def base(self):
+        return f"http://127.0.0.1:{self.httpd.server_port}/"
+
+    @property
+    def requests(self):
+        return self.httpd.requests
+
+    def fail(self, path, times):
+        self.httpd.failures[path] = times
+
+    def __enter__(self):
+        self.thread.start()
+        return self
+
+    def __exit__(self, *exc):
+        self.httpd.shutdown()
+        self.httpd.server_close()
