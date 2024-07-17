@@ -40,3 +40,9 @@ class TestCrawler(unittest.TestCase):
         kwargs.setdefault("delay", 0)
         crawler = Crawler(self.server.base, **kwargs)
         return crawler, crawler.crawl()
+
+    def test_depth_zero_is_only_the_start_page(self):
+        crawler, files = self.crawl(depth=0)
+        self.assertEqual(paths(files), ["docs/Annual%20Summary.pdf", "docs/report.pdf", "img/logo.png",
+                                        "img/logo@2x.png", "media/clip.mp4"])
+        self.assertEqual(crawler.stats.pages, 1)
