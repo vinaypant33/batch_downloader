@@ -46,3 +46,7 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(paths(files), ["docs/Annual%20Summary.pdf", "docs/report.pdf", "img/logo.png",
                                         "img/logo@2x.png", "media/clip.mp4"])
         self.assertEqual(crawler.stats.pages, 1)
+
+    def test_each_depth_finds_more(self):
+        counts = [len(self.crawl(depth=d)[1]) for d in (0, 1, 2)]
+        self.assertEqual(counts, [5, 8, 9])
