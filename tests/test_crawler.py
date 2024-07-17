@@ -50,3 +50,8 @@ class TestCrawler(unittest.TestCase):
     def test_each_depth_finds_more(self):
         counts = [len(self.crawl(depth=d)[1]) for d in (0, 1, 2)]
         self.assertEqual(counts, [5, 8, 9])
+
+    def test_files_are_found_once(self):
+        _, files = self.crawl(depth=2)
+        urls = [f.url for f in files]
+        self.assertEqual(len(urls), len(set(urls)))
