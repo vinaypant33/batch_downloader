@@ -20,3 +20,8 @@ class TestExtractLinks(unittest.TestCase):
         links = extract_links(html, "https://s.com/")
         self.assertEqual(sorted(l.rsplit("/", 1)[1] for l in links),
                          ["a.pdf", "b.png", "c.mp4", "d.mp3", "e.webm", "f.pdf"])
+
+    def test_srcset_base_tag_and_duplicates(self):
+        html = """<base href="/files/"><img srcset="x.png 1x, x@2x.png 2x"><a href="x.png">again</a>"""
+        links = extract_links(html, "https://s.com/page/")
+        self.assertEqual(links, ["https://s.com/files/x.png", "https://s.com/files/x@2x.png"])
