@@ -25,3 +25,18 @@ class TestExtractLinks(unittest.TestCase):
         html = """<base href="/files/"><img srcset="x.png 1x, x@2x.png 2x"><a href="x.png">again</a>"""
         links = extract_links(html, "https://s.com/page/")
         self.assertEqual(links, ["https://s.com/files/x.png", "https://s.com/files/x@2x.png"])
+
+
+class TestCrawler(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.server = TestServer().__enter__()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.__exit__()
+
+    def crawl(self, **kwargs):
+        kwargs.setdefault("delay", 0)
+        crawler = Crawler(self.server.base, **kwargs)
+        return crawler, crawler.crawl()
