@@ -76,3 +76,10 @@ class TestCrawler(unittest.TestCase):
         _, files = self.crawl(depth=1, file_filter=FileFilter(categories=frozenset({"documents"}),
                                                               exclude=("*summary*",)))
         self.assertEqual(paths(files), ["docs/report.pdf"])
+
+    def test_found_file_records_page_and_depth(self):
+        _, files = self.crawl(depth=2)
+        deep = next(f for f in files if f.url.endswith("deep.pdf"))
+        self.assertTrue(deep.page.endswith("blog/page3.html"))
+        self.assertEqual(deep.depth, 2)
+        self.assertEqual(deep.category, "documents")
