@@ -55,3 +55,8 @@ class TestCrawler(unittest.TestCase):
         _, files = self.crawl(depth=2)
         urls = [f.url for f in files]
         self.assertEqual(len(urls), len(set(urls)))
+
+    def test_offsite_links_are_skipped_by_default(self):
+        crawler, files = self.crawl(depth=1)
+        self.assertNotIn("outside.zip", " ".join(f.url for f in files))
+        self.assertGreaterEqual(crawler.stats.skipped_offsite, 1)
