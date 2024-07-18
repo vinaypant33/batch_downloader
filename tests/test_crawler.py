@@ -64,3 +64,10 @@ class TestCrawler(unittest.TestCase):
     def test_offsite_files_can_be_allowed(self):
         _, files = self.crawl(depth=0, offsite_files=True)
         self.assertIn("https://other-site.example/files/outside.zip", [f.url for f in files])
+
+    def test_robots_txt_is_respected(self):
+        crawler, files = self.crawl(depth=0)
+        self.assertNotIn("private/secret.pdf", paths(files))
+        self.assertEqual(crawler.stats.skipped_robots, 1)
+        _, files = self.crawl(depth=0, respect_robots=False)
+        self.assertIn("private/secret.pdf", paths(files))
