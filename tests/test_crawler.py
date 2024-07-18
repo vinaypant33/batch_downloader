@@ -71,3 +71,8 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(crawler.stats.skipped_robots, 1)
         _, files = self.crawl(depth=0, respect_robots=False)
         self.assertIn("private/secret.pdf", paths(files))
+
+    def test_filter_is_applied_while_crawling(self):
+        _, files = self.crawl(depth=1, file_filter=FileFilter(categories=frozenset({"documents"}),
+                                                              exclude=("*summary*",)))
+        self.assertEqual(paths(files), ["docs/report.pdf"])
