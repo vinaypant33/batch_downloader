@@ -60,3 +60,7 @@ class TestCrawler(unittest.TestCase):
         crawler, files = self.crawl(depth=1)
         self.assertNotIn("outside.zip", " ".join(f.url for f in files))
         self.assertGreaterEqual(crawler.stats.skipped_offsite, 1)
+
+    def test_offsite_files_can_be_allowed(self):
+        _, files = self.crawl(depth=0, offsite_files=True)
+        self.assertIn("https://other-site.example/files/outside.zip", [f.url for f in files])
