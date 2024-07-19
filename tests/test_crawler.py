@@ -83,3 +83,11 @@ class TestCrawler(unittest.TestCase):
         self.assertTrue(deep.page.endswith("blog/page3.html"))
         self.assertEqual(deep.depth, 2)
         self.assertEqual(deep.category, "documents")
+
+    def test_callbacks_and_stop(self):
+        pages, found = [], []
+        crawler = Crawler(self.server.base, depth=2, delay=0)
+        crawler.crawl(on_page=lambda u, d: pages.append(d), on_file=found.append,
+                      should_stop=lambda: len(pages) >= 1)
+        self.assertEqual(pages, [0])
+        self.assertEqual(len(found), 5)
