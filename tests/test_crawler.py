@@ -91,3 +91,7 @@ class TestCrawler(unittest.TestCase):
                       should_stop=lambda: len(pages) >= 1)
         self.assertEqual(pages, [0])
         self.assertEqual(len(found), 5)
+
+    def test_max_pages(self):
+        crawler, _ = self.crawl(depth=5, max_pages=2)
+        self.assertEqual(crawler.stats.pages, 2)
