@@ -95,3 +95,8 @@ class TestCrawler(unittest.TestCase):
     def test_max_pages(self):
         crawler, _ = self.crawl(depth=5, max_pages=2)
         self.assertEqual(crawler.stats.pages, 2)
+
+    def test_missing_page_counts_as_error(self):
+        crawler = Crawler(self.server.base + "nope.html", depth=0, delay=0)
+        self.assertEqual(crawler.crawl(), [])
+        self.assertEqual(crawler.stats.errors, 1)
