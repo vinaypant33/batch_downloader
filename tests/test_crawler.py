@@ -100,3 +100,9 @@ class TestCrawler(unittest.TestCase):
         crawler = Crawler(self.server.base + "nope.html", depth=0, delay=0)
         self.assertEqual(crawler.crawl(), [])
         self.assertEqual(crawler.stats.errors, 1)
+
+    def test_bad_settings(self):
+        with self.assertRaises(ValueError):
+            Crawler("not a url")
+        with self.assertRaises(ValueError):
+            Crawler(self.server.base, depth=-1)
