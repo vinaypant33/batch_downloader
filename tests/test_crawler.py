@@ -106,3 +106,12 @@ class TestCrawler(unittest.TestCase):
             Crawler("not a url")
         with self.assertRaises(ValueError):
             Crawler(self.server.base, depth=-1)
+
+
+class TestRobotsAndSitemap(unittest.TestCase):
+    def test_robots_cache_reads_once_per_site(self):
+        with TestServer() as server:
+            robots = RobotsCache(requests.Session(), "TestBot")
+            self.assertFalse(robots.allowed(server.base + "private/x.pdf"))
+            self.assertTrue(robots.allowed(server.base + "docs/x.pdf"))
+            self.assertEqual(server.requests["/robots.txt"], 1)
