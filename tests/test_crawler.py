@@ -119,3 +119,12 @@ class TestRobotsAndSitemap(unittest.TestCase):
     def test_missing_robots_allows_everything(self):
         robots = RobotsCache(requests.Session(), "TestBot")
         self.assertTrue(robots.allowed("http://127.0.0.1:9/anything"))   # nothing listening
+
+    def test_parse_sitemap(self):
+        xml = """<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                 <url><loc>https://s.com/a.html</loc></url><url><loc>https://s.com/b.html</loc></url></urlset>"""
+        self.assertEqual(parse_sitemap(xml), (["https://s.com/a.html", "https://s.com/b.html"], []))
+        index = """<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                   <sitemap><loc>https://s.com/s1.xml</loc></sitemap></sitemapindex>"""
+        self.assertEqual(parse_sitemap(index), ([], ["https://s.com/s1.xml"]))
+        self.assertEqual(parse_sitemap("not xml"), ([], []))
