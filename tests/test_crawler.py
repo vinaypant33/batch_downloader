@@ -128,3 +128,15 @@ class TestRobotsAndSitemap(unittest.TestCase):
                    <sitemap><loc>https://s.com/s1.xml</loc></sitemap></sitemapindex>"""
         self.assertEqual(parse_sitemap(index), ([], ["https://s.com/s1.xml"]))
         self.assertEqual(parse_sitemap("not xml"), ([], []))
+
+    def test_sitemap_adds_unlinked_pages(self):
+        with TestServer() as server:
+            pages = sitemap_pages(requests.Session(), server.base)
+            self.assertTrue(any(p.endswith("hidden.html") for p in pages))
+            crawler = Crawler(server.base, depth=1, delay=0, use_sitemap=True)
+            files = crawler.crawl()
+            self.assertIn("docs/hidden.pdf", paths(files))
+
+
+if __name__ == "__main__":
+    unittest.main()
