@@ -115,3 +115,7 @@ class TestRobotsAndSitemap(unittest.TestCase):
             self.assertFalse(robots.allowed(server.base + "private/x.pdf"))
             self.assertTrue(robots.allowed(server.base + "docs/x.pdf"))
             self.assertEqual(server.requests["/robots.txt"], 1)
+
+    def test_missing_robots_allows_everything(self):
+        robots = RobotsCache(requests.Session(), "TestBot")
+        self.assertTrue(robots.allowed("http://127.0.0.1:9/anything"))   # nothing listening
