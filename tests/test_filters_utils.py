@@ -17,3 +17,7 @@ class TestFileTypes(unittest.TestCase):
         self.assertEqual(category_of("https://s.com/pic.jpeg"), "images")
         self.assertEqual(category_of("https://s.com/data.tar.gz"), "archives")
         self.assertIsNone(category_of("https://s.com/page.html"))
+
+    def test_no_extension_is_in_two_categories(self):
+        seen = [ext for exts in CATEGORIES.values() for ext in exts]
+        self.assertEqual(len(seen), len(set(seen)))
