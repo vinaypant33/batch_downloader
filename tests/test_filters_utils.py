@@ -28,3 +28,9 @@ class TestFileFilter(unittest.TestCase):
         f = FileFilter(categories=frozenset({"documents"}))
         self.assertTrue(f.accepts_url("https://s.com/a.pdf"))
         self.assertFalse(f.accepts_url("https://s.com/a.png"))
+
+    def test_include_and_exclude_patterns(self):
+        f = FileFilter(include=("*report*",), exclude=("*draft*",))
+        self.assertTrue(f.accepts_url("https://s.com/Annual-Report.pdf"))
+        self.assertFalse(f.accepts_url("https://s.com/report-draft.pdf"))
+        self.assertFalse(f.accepts_url("https://s.com/summary.pdf"))
