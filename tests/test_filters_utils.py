@@ -21,3 +21,10 @@ class TestFileTypes(unittest.TestCase):
     def test_no_extension_is_in_two_categories(self):
         seen = [ext for exts in CATEGORIES.values() for ext in exts]
         self.assertEqual(len(seen), len(set(seen)))
+
+
+class TestFileFilter(unittest.TestCase):
+    def test_category_filter(self):
+        f = FileFilter(categories=frozenset({"documents"}))
+        self.assertTrue(f.accepts_url("https://s.com/a.pdf"))
+        self.assertFalse(f.accepts_url("https://s.com/a.png"))
