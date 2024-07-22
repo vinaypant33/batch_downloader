@@ -34,3 +34,11 @@ class TestFileFilter(unittest.TestCase):
         self.assertTrue(f.accepts_url("https://s.com/Annual-Report.pdf"))
         self.assertFalse(f.accepts_url("https://s.com/report-draft.pdf"))
         self.assertFalse(f.accepts_url("https://s.com/summary.pdf"))
+
+    def test_size_limits(self):
+        f = FileFilter(min_bytes=10, max_bytes=100)
+        self.assertTrue(f.accepts_size(50))
+        self.assertTrue(f.accepts_size(None))      # unknown size is allowed
+        self.assertFalse(f.accepts_size(5))
+        self.assertFalse(f.accepts_size(500))
+        self.assertTrue(FileFilter().accepts_size(10 ** 12))
