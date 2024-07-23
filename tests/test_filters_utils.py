@@ -65,3 +65,24 @@ class TestUtils(unittest.TestCase):
         out = shorten(long, 40)
         self.assertEqual(len(out), 40)
         self.assertTrue(out.endswith("file.pdf"))
+
+
+class FakeClock:
+    def __init__(self):
+        self.now = 0.0
+        self.slept = 0.0
+
+    def time(self):
+        return self.now
+
+    def sleep(self, seconds):
+        self.slept += seconds
+        self.now += seconds
+
+
+class TestTokenBucket(unittest.TestCase):
+    def test_burst_is_free_then_rate_applies(self):
+        clock = FakeClock()
+        bucket = TokenBucket(1000, clock=clock.time, sleep=clock.sleep)
+        self.assertEqual(bucket.consume(1000), 0.0)
+        self.assertAlmostEqual(bucket.consume(500), 0.5)
