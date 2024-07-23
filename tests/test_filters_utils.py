@@ -86,3 +86,10 @@ class TestTokenBucket(unittest.TestCase):
         bucket = TokenBucket(1000, clock=clock.time, sleep=clock.sleep)
         self.assertEqual(bucket.consume(1000), 0.0)
         self.assertAlmostEqual(bucket.consume(500), 0.5)
+
+    def test_average_rate_over_many_chunks(self):
+        clock = FakeClock()
+        bucket = TokenBucket(2000, clock=clock.time, sleep=clock.sleep)
+        for _ in range(20):
+            bucket.consume(1000)
+        self.assertAlmostEqual(clock.now, 9.0)   # 20 KB at 2 KB/s, first 2 KB free
