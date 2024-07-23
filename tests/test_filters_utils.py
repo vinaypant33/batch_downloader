@@ -42,3 +42,11 @@ class TestFileFilter(unittest.TestCase):
         self.assertFalse(f.accepts_size(5))
         self.assertFalse(f.accepts_size(500))
         self.assertTrue(FileFilter().accepts_size(10 ** 12))
+
+    def test_invalid_filters_are_rejected(self):
+        with self.assertRaises(ValueError):
+            FileFilter(categories=frozenset({"spreadsheets"}))
+        with self.assertRaises(ValueError):
+            FileFilter(min_bytes=10, max_bytes=5)
+        with self.assertRaises(ValueError):
+            FileFilter(max_bytes=-1)
