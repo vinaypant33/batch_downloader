@@ -58,3 +58,10 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(human_size(1536), "1.5 KB")
         self.assertEqual(human_size(5 * 1024 ** 3), "5.0 GB")
         self.assertEqual(human_size(None), "?")
+
+    def test_shorten(self):
+        self.assertEqual(shorten("short", 10), "short")
+        long = "https://example.com/" + "x" * 100 + "/file.pdf"
+        out = shorten(long, 40)
+        self.assertEqual(len(out), 40)
+        self.assertTrue(out.endswith("file.pdf"))
