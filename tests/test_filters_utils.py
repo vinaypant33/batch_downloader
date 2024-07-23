@@ -50,3 +50,11 @@ class TestFileFilter(unittest.TestCase):
             FileFilter(min_bytes=10, max_bytes=5)
         with self.assertRaises(ValueError):
             FileFilter(max_bytes=-1)
+
+
+class TestUtils(unittest.TestCase):
+    def test_human_size(self):
+        self.assertEqual(human_size(512), "512 B")
+        self.assertEqual(human_size(1536), "1.5 KB")
+        self.assertEqual(human_size(5 * 1024 ** 3), "5.0 GB")
+        self.assertEqual(human_size(None), "?")
