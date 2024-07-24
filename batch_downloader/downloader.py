@@ -22,3 +22,22 @@ from .crawler import USER_AGENT
 from .filters import FileFilter
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class DownloadResult:
+    url: str
+    status: str            # downloaded | skipped | duplicate | failed | stopped
+    path: str = None
+    size: int = 0
+    sha256: str = None
+    error: str = None
+    attempts: int = 1
+
+
+class StopRequested(Exception):
+    """Raised inside a download when the user presses Stop."""
+
+
+class _Retryable(Exception):
+    """A failure worth trying again (network problem or 5xx)."""
