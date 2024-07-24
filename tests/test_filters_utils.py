@@ -93,3 +93,11 @@ class TestTokenBucket(unittest.TestCase):
         for _ in range(20):
             bucket.consume(1000)
         self.assertAlmostEqual(clock.now, 9.0)   # 20 KB at 2 KB/s, first 2 KB free
+
+    def test_rate_must_be_positive(self):
+        with self.assertRaises(ValueError):
+            TokenBucket(0)
+
+
+if __name__ == "__main__":
+    unittest.main()
