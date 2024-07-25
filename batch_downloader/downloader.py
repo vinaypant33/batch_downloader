@@ -80,3 +80,21 @@ def sha256_of(path, chunk=1 << 20):
         for block in iter(lambda: handle.read(chunk), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+class Downloader:
+    def __init__(self, folder, session=None, subfolders=True, file_filter=None, timeout=30,
+                 retries=2, backoff=1.0, chunk_size=64 * 1024, rate_limiter=None, manifest=None,
+                 resume=True):
+        self.folder = Path(folder)
+        self.session = session or requests.Session()
+        self.session.headers.setdefault("User-Agent", USER_AGENT)
+        self.subfolders = subfolders
+        self.filter = file_filter or FileFilter()
+        self.timeout = timeout
+        self.retries = retries
+        self.backoff = backoff
+        self.chunk_size = chunk_size
+        self.rate_limiter = rate_limiter
+        self.manifest = manifest
+        self.resume = resume
