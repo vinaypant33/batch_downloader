@@ -60,3 +60,15 @@ def safe_filename(url, default="download"):
         suffix = PurePosixPath(name).suffix[:10]
         name = name[:150 - len(suffix)] + suffix
     return name
+
+
+def unique_path(path):
+    """report.pdf -> 'report (1).pdf' if report.pdf already exists."""
+    path = Path(path)
+    if not path.exists():
+        return path
+    for n in range(1, 10_000):
+        candidate = path.with_name(f"{path.stem} ({n}){path.suffix}")
+        if not candidate.exists():
+            return candidate
+    raise FileExistsError(f"too many copies of {path.name}")
