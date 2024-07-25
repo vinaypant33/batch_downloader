@@ -72,3 +72,11 @@ def unique_path(path):
         if not candidate.exists():
             return candidate
     raise FileExistsError(f"too many copies of {path.name}")
+
+
+def sha256_of(path, chunk=1 << 20):
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for block in iter(lambda: handle.read(chunk), b""):
+            digest.update(block)
+    return digest.hexdigest()
