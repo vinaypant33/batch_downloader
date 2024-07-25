@@ -41,3 +41,22 @@ class StopRequested(Exception):
 
 class _Retryable(Exception):
     """A failure worth trying again (network problem or 5xx)."""
+
+
+INVALID_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+RESERVED_NAMES = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
+
+
+def safe_filename(url, default="download"):
+    """A file name that is safe on Windows, macOS and Linux."""
+    name = PurePosixPath(unquote(urlparse(url).path)).name
+    name = INVALID_CHARS.sub("_", name).strip(" .")
+    if not name:
+        name = default
+    stem, dot, ext = name.partition(".")
+    if stem.upper() in RESERVED_NAMES:
+        name = f"_{name}"
+    if len(name) > 150:
+        suffix = PurePosixPath(name).suffix[:10]
+        name = name[:150 - len(suffix)] + suffix
+    return name
