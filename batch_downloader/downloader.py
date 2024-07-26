@@ -102,3 +102,23 @@ class Downloader:
     def target_for(self, found):
         folder = self.folder / found.category if self.subfolders else self.folder
         return folder / safe_filename(found.url)
+
+    def download(self, found, on_progress=None, should_stop=None):
+        """Download one file, retrying network and server errors."""
+        should_stop = should_stop or (lambda: False)
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                return self._download_once(found, attempt, on_progress, should_stop)
+            except StopRequested:
+                return DownloadResult(found.url, "stopped", attempts=attempt)
+            except _Retryable as error:
+                if attempt > self.retries:
+                    log.warning("giving up on %s after %d attempts: %s", found.url, attempt, error)
+                    return DownloadResult(found.url, "failed", error=str(error), attempts=attempt)
+                log.info("retrying %s (attempt %d failed: %s)", found.url, attempt, error)
+                time.sleep(self.backoff * 2 ** (attempt - 1))
+            except (requests.RequestException, OSError) as error:
+                log.warning("download of %s failed: %s", found.url, error)
+                return DownloadResult(found.url, "failed", error=str(error), attempts=attempt)
