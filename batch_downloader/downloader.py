@@ -122,3 +122,14 @@ class Downloader:
             except (requests.RequestException, OSError) as error:
                 log.warning("download of %s failed: %s", found.url, error)
                 return DownloadResult(found.url, "failed", error=str(error), attempts=attempt)
+
+    def _download_once(self, found, attempt, on_progress, should_stop):
+        target = self.target_for(found)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        part = target.with_name(target.name + ".part")
+        have = part.stat().st_size if (self.resume and part.exists()) else 0
+        headers = {"Range": f"bytes={have}-"} if have else {}
+        try:
+            response = self.session.get(found.url, stream=True, timeout=self.timeout, headers=headers)
+        except (requests.ConnectionError, requests.Timeout) as error:
+            raise _Retryable(str(error)) from error
