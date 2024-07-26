@@ -133,3 +133,19 @@ class Downloader:
             response = self.session.get(found.url, stream=True, timeout=self.timeout, headers=headers)
         except (requests.ConnectionError, requests.Timeout) as error:
             raise _Retryable(str(error)) from error
+
+        with response:
+            if response.status_code == 416:            # .part is already complete
+                response.close()
+                have, total, mode = have, have, None
+            elif response.status_code >= 500:
+                raise _Retryable(f"HTTP {response.status_code}")
+            elif response.status_code >= 400:
+                return DownloadResult(found.url, "failed", error=f"HTTP {response.status_code}", attempts=attempt)
+            else:
+                resumed = response.status_code == 206 and have > 0
+                if not resumed:
+                    have = 0
+                length = response.headers.get("Content-Length")
+                total = have + int(length) if length and length.isdigit() else None
+                mode = "ab" if resumed else "wb"
