@@ -98,3 +98,7 @@ class Downloader:
         self.rate_limiter = rate_limiter
         self.manifest = manifest
         self.resume = resume
+
+    def target_for(self, found):
+        folder = self.folder / found.category if self.subfolders else self.folder
+        return folder / safe_filename(found.url)
