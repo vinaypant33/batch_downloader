@@ -191,3 +191,15 @@ class Downloader:
         if self.manifest:
             self.manifest.record(result, found)
         return result
+
+    def download_all(self, files, workers=4, on_result=None, on_progress=None, should_stop=None):
+        """Download in parallel. Results come back in the same order as `files`."""
+        results = [None] * len(files)
+        with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+            futures = {pool.submit(self.download, f, on_progress, should_stop): i for i, f in enumerate(files)}
+            for future in as_completed(futures):
+                index = futures[future]
+                results[index] = future.result()
+                if on_result:
+                    on_result(index, results[index])
+        return results
