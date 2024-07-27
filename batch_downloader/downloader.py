@@ -149,3 +149,11 @@ class Downloader:
                 length = response.headers.get("Content-Length")
                 total = have + int(length) if length and length.isdigit() else None
                 mode = "ab" if resumed else "wb"
+
+            if not self.filter.accepts_size(total):
+                return DownloadResult(found.url, "skipped", error="outside the size limits",
+                                      size=total or 0, attempts=attempt)
+            if target.exists() and total is not None and target.stat().st_size == total:
+                part.unlink(missing_ok=True)
+                return DownloadResult(found.url, "skipped", str(target), total,
+                                      error="already downloaded", attempts=attempt)
