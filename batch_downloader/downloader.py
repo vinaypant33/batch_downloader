@@ -175,3 +175,19 @@ class Downloader:
                                 on_progress(found, done, total)
                 except (requests.ConnectionError, requests.exceptions.ChunkedEncodingError) as error:
                     raise _Retryable(str(error)) from error
+
+        final = target if not target.exists() else unique_path(target)
+        part.replace(final)
+        digest = sha256_of(final)
+        size = final.stat().st_size
+        if self.manifest:
+            existing = self.manifest.path_for_hash(digest, exclude_url=found.url)
+            if existing and Path(existing).exists() and Path(existing) != final:
+                final.unlink()
+                result = DownloadResult(found.url, "duplicate", existing, size, digest, attempts=attempt)
+                self.manifest.record(result, found)
+                return result
+        result = DownloadResult(found.url, "downloaded", str(final), size, digest, attempts=attempt)
+        if self.manifest:
+            self.manifest.record(result, found)
+        return result
