@@ -157,3 +157,21 @@ class Downloader:
                 part.unlink(missing_ok=True)
                 return DownloadResult(found.url, "skipped", str(target), total,
                                       error="already downloaded", attempts=attempt)
+
+            if mode is not None:
+                done = have
+                try:
+                    with open(part, mode) as handle:
+                        for chunk in response.iter_content(self.chunk_size):
+                            if should_stop():
+                                raise StopRequested()
+                            if not chunk:
+                                continue
+                            if self.rate_limiter:
+                                self.rate_limiter.consume(len(chunk))
+                            handle.write(chunk)
+                            done += len(chunk)
+                            if on_progress:
+                                on_progress(found, done, total)
+                except (requests.ConnectionError, requests.exceptions.ChunkedEncodingError) as error:
+                    raise _Retryable(str(error)) from error
