@@ -51,3 +51,13 @@ class Manifest:
                 (result.url, getattr(found, "page", None), getattr(found, "category", None), result.status,
                  result.path, result.size, result.sha256, result.error, now_iso()),
             )
+
+    def path_for_hash(self, sha256, exclude_url=None):
+        """Where a file with this checksum was already saved, if anywhere."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT path FROM downloads WHERE sha256 = ? AND status = 'downloaded' AND url <> ? "
+                "ORDER BY id LIMIT 1",
+                (sha256, exclude_url or ""),
+            ).fetchone()
+        return row[0] if row else None
