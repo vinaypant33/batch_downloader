@@ -61,3 +61,12 @@ class Manifest:
                 (sha256, exclude_url or ""),
             ).fetchone()
         return row[0] if row else None
+
+    COLUMNS = ("finished_at", "status", "category", "size", "path", "url", "page", "sha256", "error")
+
+    def history(self, limit=500):
+        with self._lock:
+            rows = self._conn.execute(
+                f"SELECT {', '.join(self.COLUMNS)} FROM downloads ORDER BY id DESC LIMIT ?", (limit,)
+            ).fetchall()
+        return [dict(zip(self.COLUMNS, row)) for row in rows]
