@@ -42,3 +42,12 @@ class Manifest:
 
     def close(self):
         self._conn.close()
+
+    def record(self, result, found=None):
+        with self._lock, self._conn:
+            self._conn.execute(
+                "INSERT INTO downloads (url, page, category, status, path, size, sha256, error, finished_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (result.url, getattr(found, "page", None), getattr(found, "category", None), result.status,
+                 result.path, result.size, result.sha256, result.error, now_iso()),
+            )
