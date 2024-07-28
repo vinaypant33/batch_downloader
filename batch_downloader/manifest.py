@@ -29,3 +29,16 @@ CREATE TABLE IF NOT EXISTS downloads (
 );
 CREATE INDEX IF NOT EXISTS ix_downloads_sha ON downloads (sha256);
 """
+
+
+class Manifest:
+    def __init__(self, folder):
+        folder = Path(folder)
+        folder.mkdir(parents=True, exist_ok=True)
+        self.path = folder / FILE_NAME
+        self._conn = sqlite3.connect(str(self.path), check_same_thread=False)
+        self._conn.executescript(SCHEMA)
+        self._lock = threading.Lock()
+
+    def close(self):
+        self._conn.close()
