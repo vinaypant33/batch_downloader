@@ -77,3 +77,11 @@ class Manifest:
                 "SELECT status, COUNT(*), COALESCE(SUM(size), 0) FROM downloads GROUP BY status"
             ).fetchall()
         return {status: {"files": count, "bytes": total} for status, count, total in rows}
+
+    def export_csv(self, path):
+        rows = self.history(limit=1_000_000)
+        with open(path, "w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=self.COLUMNS)
+            writer.writeheader()
+            writer.writerows(reversed(rows))
+        return len(rows)
