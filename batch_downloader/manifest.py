@@ -70,3 +70,10 @@ class Manifest:
                 f"SELECT {', '.join(self.COLUMNS)} FROM downloads ORDER BY id DESC LIMIT ?", (limit,)
             ).fetchall()
         return [dict(zip(self.COLUMNS, row)) for row in rows]
+
+    def summary(self):
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT status, COUNT(*), COALESCE(SUM(size), 0) FROM downloads GROUP BY status"
+            ).fetchall()
+        return {status: {"files": count, "bytes": total} for status, count, total in rows}
