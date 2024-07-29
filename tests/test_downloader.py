@@ -18,3 +18,6 @@ def found(server, path, category="documents"):
 class TestFileNames(unittest.TestCase):
     def test_name_comes_from_the_url(self):
         self.assertEqual(safe_filename("https://s.com/a/Annual%20Report.pdf?x=1"), "Annual Report.pdf")
+
+    def test_illegal_characters_are_replaced(self):
+        self.assertEqual(safe_filename('https://s.com/a%3Ab%22c%7Cd.pdf'), "a_b_c_d.pdf")
