@@ -25,3 +25,8 @@ class TestFileNames(unittest.TestCase):
     def test_reserved_and_empty_names(self):
         self.assertEqual(safe_filename("https://s.com/CON.pdf"), "_CON.pdf")
         self.assertEqual(safe_filename("https://s.com/"), "download")
+
+    def test_long_names_keep_their_extension(self):
+        name = safe_filename("https://s.com/" + "a" * 300 + ".pdf")
+        self.assertEqual(len(name), 150)
+        self.assertTrue(name.endswith(".pdf"))
