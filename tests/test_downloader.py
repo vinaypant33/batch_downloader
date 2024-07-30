@@ -21,3 +21,7 @@ class TestFileNames(unittest.TestCase):
 
     def test_illegal_characters_are_replaced(self):
         self.assertEqual(safe_filename('https://s.com/a%3Ab%22c%7Cd.pdf'), "a_b_c_d.pdf")
+
+    def test_reserved_and_empty_names(self):
+        self.assertEqual(safe_filename("https://s.com/CON.pdf"), "_CON.pdf")
+        self.assertEqual(safe_filename("https://s.com/"), "download")
