@@ -37,3 +37,16 @@ class TestFileNames(unittest.TestCase):
         (folder / "r (1).pdf").write_bytes(b"2")
         self.assertEqual(unique_path(folder / "r.pdf").name, "r (2).pdf")
         self.assertEqual(unique_path(folder / "new.pdf").name, "new.pdf")
+
+
+class TestDownloader(unittest.TestCase):
+    def setUp(self):
+        self.server = TestServer().__enter__()
+        self.folder = Path(tempfile.mkdtemp())
+
+    def tearDown(self):
+        self.server.__exit__()
+
+    def make(self, **kwargs):
+        kwargs.setdefault("backoff", 0)
+        return Downloader(self.folder, **kwargs)
