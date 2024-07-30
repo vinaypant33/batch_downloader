@@ -30,3 +30,10 @@ class TestFileNames(unittest.TestCase):
         name = safe_filename("https://s.com/" + "a" * 300 + ".pdf")
         self.assertEqual(len(name), 150)
         self.assertTrue(name.endswith(".pdf"))
+
+    def test_unique_path_numbers_copies(self):
+        folder = Path(tempfile.mkdtemp())
+        (folder / "r.pdf").write_bytes(b"1")
+        (folder / "r (1).pdf").write_bytes(b"2")
+        self.assertEqual(unique_path(folder / "r.pdf").name, "r (2).pdf")
+        self.assertEqual(unique_path(folder / "new.pdf").name, "new.pdf")
