@@ -50,3 +50,11 @@ class TestDownloader(unittest.TestCase):
     def make(self, **kwargs):
         kwargs.setdefault("backoff", 0)
         return Downloader(self.folder, **kwargs)
+
+    def test_download_saves_exact_bytes_in_category_folder(self):
+        result = self.make().download(found(self.server, "docs/report.pdf"))
+        self.assertEqual(result.status, "downloaded")
+        saved = Path(result.path)
+        self.assertEqual(saved, self.folder / "documents" / "report.pdf")
+        self.assertEqual(saved.read_bytes(), (SITE / "docs" / "report.pdf").read_bytes())
+        self.assertEqual(result.sha256, hashlib.sha256(saved.read_bytes()).hexdigest())
