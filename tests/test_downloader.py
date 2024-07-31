@@ -69,3 +69,9 @@ class TestDownloader(unittest.TestCase):
         again = downloader.download(found(self.server, "docs/report.pdf"))
         self.assertEqual(again.status, "skipped")
         self.assertEqual(again.error, "already downloaded")
+
+    def test_changed_file_is_saved_as_a_copy(self):
+        (self.folder / "documents").mkdir()
+        (self.folder / "documents" / "report.pdf").write_bytes(b"an older, different file")
+        result = self.make().download(found(self.server, "docs/report.pdf"))
+        self.assertEqual(Path(result.path).name, "report (1).pdf")
