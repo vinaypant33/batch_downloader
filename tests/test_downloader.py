@@ -58,3 +58,7 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(saved, self.folder / "documents" / "report.pdf")
         self.assertEqual(saved.read_bytes(), (SITE / "docs" / "report.pdf").read_bytes())
         self.assertEqual(result.sha256, hashlib.sha256(saved.read_bytes()).hexdigest())
+
+    def test_flat_folder_option(self):
+        result = self.make(subfolders=False).download(found(self.server, "img/logo.png", "images"))
+        self.assertEqual(Path(result.path).parent, self.folder)
