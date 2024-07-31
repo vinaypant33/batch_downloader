@@ -75,3 +75,7 @@ class TestDownloader(unittest.TestCase):
         (self.folder / "documents" / "report.pdf").write_bytes(b"an older, different file")
         result = self.make().download(found(self.server, "docs/report.pdf"))
         self.assertEqual(Path(result.path).name, "report (1).pdf")
+
+    def test_no_part_files_left_behind(self):
+        self.make().download(found(self.server, "media/clip.mp4", "videos"))
+        self.assertEqual(list(self.folder.rglob("*.part")), [])
