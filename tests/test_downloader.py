@@ -62,3 +62,10 @@ class TestDownloader(unittest.TestCase):
     def test_flat_folder_option(self):
         result = self.make(subfolders=False).download(found(self.server, "img/logo.png", "images"))
         self.assertEqual(Path(result.path).parent, self.folder)
+
+    def test_second_download_is_skipped(self):
+        downloader = self.make()
+        downloader.download(found(self.server, "docs/report.pdf"))
+        again = downloader.download(found(self.server, "docs/report.pdf"))
+        self.assertEqual(again.status, "skipped")
+        self.assertEqual(again.error, "already downloaded")
