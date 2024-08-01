@@ -91,3 +91,10 @@ class TestDownloader(unittest.TestCase):
         result = self.make(retries=2).download(found(self.server, "flaky/docs/report.pdf"))
         self.assertEqual(result.status, "downloaded")
         self.assertEqual(result.attempts, 3)
+
+    def test_retries_give_up(self):
+        self.server.fail("/flaky/docs/report.pdf", times=5)
+        result = self.make(retries=1).download(found(self.server, "flaky/docs/report.pdf"))
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(result.attempts, 2)
+        self.assertIn("503", result.error)
