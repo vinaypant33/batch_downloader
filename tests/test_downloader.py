@@ -85,3 +85,9 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(result.status, "failed")
         self.assertEqual(result.error, "HTTP 404")
         self.assertEqual(result.attempts, 1)
+
+    def test_server_errors_are_retried(self):
+        self.server.fail("/flaky/docs/report.pdf", times=2)
+        result = self.make(retries=2).download(found(self.server, "flaky/docs/report.pdf"))
+        self.assertEqual(result.status, "downloaded")
+        self.assertEqual(result.attempts, 3)
