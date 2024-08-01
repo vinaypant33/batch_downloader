@@ -79,3 +79,9 @@ class TestDownloader(unittest.TestCase):
     def test_no_part_files_left_behind(self):
         self.make().download(found(self.server, "media/clip.mp4", "videos"))
         self.assertEqual(list(self.folder.rglob("*.part")), [])
+
+    def test_missing_file_fails_without_retry(self):
+        result = self.make().download(found(self.server, "docs/missing.pdf"))
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(result.error, "HTTP 404")
+        self.assertEqual(result.attempts, 1)
