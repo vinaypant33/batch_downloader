@@ -98,3 +98,12 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(result.status, "failed")
         self.assertEqual(result.attempts, 2)
         self.assertIn("503", result.error)
+
+    def test_resume_from_part_file(self):
+        original = (SITE / "media" / "clip.mp4").read_bytes()
+        target = self.folder / "videos" / "clip.mp4.part"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(original[:1000])
+        result = self.make().download(found(self.server, "media/clip.mp4", "videos"))
+        self.assertEqual(result.status, "downloaded")
+        self.assertEqual(Path(result.path).read_bytes(), original)
