@@ -124,3 +124,11 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(result.status, "skipped")
         self.assertEqual(result.error, "outside the size limits")
         self.assertFalse((self.folder / "videos" / "clip.mp4").exists())
+
+    def test_stop_keeps_part_file_for_later(self):
+        calls = []
+        result = self.make(chunk_size=512).download(
+            found(self.server, "slow/media/clip.mp4", "videos"),
+            should_stop=lambda: calls.append(1) or len(calls) > 2)
+        self.assertEqual(result.status, "stopped")
+        self.assertTrue((self.folder / "videos" / "clip.mp4.part").exists())
