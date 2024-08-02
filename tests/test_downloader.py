@@ -117,3 +117,10 @@ class TestDownloader(unittest.TestCase):
         part.write_bytes(b"garbage that must be thrown away")
         result = self.make().download(found(self.server, "media/clip.mp4", "videos"))
         self.assertEqual(Path(result.path).read_bytes(), original)
+
+    def test_size_limit_skips_big_files(self):
+        downloader = self.make(file_filter=FileFilter(max_bytes=1000))
+        result = downloader.download(found(self.server, "media/clip.mp4", "videos"))
+        self.assertEqual(result.status, "skipped")
+        self.assertEqual(result.error, "outside the size limits")
+        self.assertFalse((self.folder / "videos" / "clip.mp4").exists())
