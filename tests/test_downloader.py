@@ -132,3 +132,11 @@ class TestDownloader(unittest.TestCase):
             should_stop=lambda: calls.append(1) or len(calls) > 2)
         self.assertEqual(result.status, "stopped")
         self.assertTrue((self.folder / "videos" / "clip.mp4.part").exists())
+
+    def test_progress_reports_bytes(self):
+        seen = []
+        self.make(chunk_size=500).download(found(self.server, "docs/report.pdf"),
+                                           on_progress=lambda f, done, total: seen.append((done, total)))
+        size = (SITE / "docs" / "report.pdf").stat().st_size
+        self.assertEqual(seen[-1], (size, size))
+        self.assertEqual([d for d, _ in seen], sorted(d for d, _ in seen))
