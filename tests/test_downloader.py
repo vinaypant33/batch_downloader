@@ -107,3 +107,13 @@ class TestDownloader(unittest.TestCase):
         result = self.make().download(found(self.server, "media/clip.mp4", "videos"))
         self.assertEqual(result.status, "downloaded")
         self.assertEqual(Path(result.path).read_bytes(), original)
+
+    def test_resume_falls_back_when_server_ignores_ranges(self):
+        self.server.__exit__()
+        self.server = TestServer(ranges=False).__enter__()
+        original = (SITE / "media" / "clip.mp4").read_bytes()
+        part = self.folder / "videos" / "clip.mp4.part"
+        part.parent.mkdir(parents=True)
+        part.write_bytes(b"garbage that must be thrown away")
+        result = self.make().download(found(self.server, "media/clip.mp4", "videos"))
+        self.assertEqual(Path(result.path).read_bytes(), original)
