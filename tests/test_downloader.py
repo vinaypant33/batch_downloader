@@ -140,3 +140,8 @@ class TestDownloader(unittest.TestCase):
         size = (SITE / "docs" / "report.pdf").stat().st_size
         self.assertEqual(seen[-1], (size, size))
         self.assertEqual([d for d, _ in seen], sorted(d for d, _ in seen))
+
+    def test_speed_limit_is_used(self):
+        bucket = TokenBucket(10 ** 9)
+        self.make(rate_limiter=bucket).download(found(self.server, "docs/report.pdf"))
+        self.assertLess(bucket.tokens, bucket.capacity)
