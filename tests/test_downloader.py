@@ -145,3 +145,14 @@ class TestDownloader(unittest.TestCase):
         bucket = TokenBucket(10 ** 9)
         self.make(rate_limiter=bucket).download(found(self.server, "docs/report.pdf"))
         self.assertLess(bucket.tokens, bucket.capacity)
+
+    def test_duplicate_content_is_detected(self):
+        manifest = Manifest(self.folder)
+        downloader = self.make(manifest=manifest)
+        first = downloader.download(found(self.server, "img/logo.png", "images"))
+        copy = downloader.download(found(self.server, "img/logo_copy.png", "images"))
+        self.assertEqual(first.status, "downloaded")
+        self.assertEqual(copy.status, "duplicate")
+        self.assertEqual(copy.path, first.path)
+        self.assertEqual(len(list((self.folder / "images").iterdir())), 1)
+        manifest.close()
