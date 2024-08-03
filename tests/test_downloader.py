@@ -156,3 +156,11 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(copy.path, first.path)
         self.assertEqual(len(list((self.folder / "images").iterdir())), 1)
         manifest.close()
+
+    def test_download_all_keeps_order(self):
+        files = [found(self.server, p) for p in ("docs/report.pdf", "docs/missing.pdf", "docs/deep.pdf")]
+        seen = []
+        results = self.make().download_all(files, workers=3, on_result=lambda i, r: seen.append(i))
+        self.assertEqual([r.url for r in results], [f.url for f in files])
+        self.assertEqual([r.status for r in results], ["downloaded", "failed", "downloaded"])
+        self.assertEqual(sorted(seen), [0, 1, 2])
