@@ -164,3 +164,12 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual([r.url for r in results], [f.url for f in files])
         self.assertEqual([r.status for r in results], ["downloaded", "failed", "downloaded"])
         self.assertEqual(sorted(seen), [0, 1, 2])
+
+    def test_sha256_helper(self):
+        path = self.folder / "x.bin"
+        path.write_bytes(b"abc")
+        self.assertEqual(sha256_of(path), hashlib.sha256(b"abc").hexdigest())
+
+
+if __name__ == "__main__":
+    unittest.main()
