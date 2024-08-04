@@ -38,3 +38,7 @@ class Settings:
         self.max_size_mb = max(int(self.max_size_mb), 0)
         self.theme = self.theme if self.theme in ("dark", "light", "system") else "dark"
         return self
+
+    @staticmethod
+    def patterns(text):
+        return tuple(p.strip() for p in text.split(",") if p.strip())
