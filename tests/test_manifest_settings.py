@@ -33,3 +33,9 @@ class TestManifest(unittest.TestCase):
         self.assertEqual([h["url"] for h in history], ["https://s.com/b.pdf", "https://s.com/a.pdf"])
         self.assertEqual(history[1]["category"], "documents")
         self.assertEqual(history[1]["page"], "https://s.com/")
+
+    def test_path_for_hash(self):
+        self.manifest.record(result("https://s.com/a.pdf", sha="abc", path="/files/a.pdf"))
+        self.assertEqual(self.manifest.path_for_hash("abc"), "/files/a.pdf")
+        self.assertIsNone(self.manifest.path_for_hash("abc", exclude_url="https://s.com/a.pdf"))
+        self.assertIsNone(self.manifest.path_for_hash("zzz"))
