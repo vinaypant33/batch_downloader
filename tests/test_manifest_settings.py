@@ -24,3 +24,12 @@ class TestManifest(unittest.TestCase):
 
     def test_database_lives_in_the_download_folder(self):
         self.assertTrue((self.folder / FILE_NAME).exists())
+
+    def test_record_and_history(self):
+        found = FoundFile("https://s.com/a.pdf", "documents", "https://s.com/", 0)
+        self.manifest.record(result("https://s.com/a.pdf"), found)
+        self.manifest.record(result("https://s.com/b.pdf", status="failed", size=0, sha=None))
+        history = self.manifest.history()
+        self.assertEqual([h["url"] for h in history], ["https://s.com/b.pdf", "https://s.com/a.pdf"])
+        self.assertEqual(history[1]["category"], "documents")
+        self.assertEqual(history[1]["page"], "https://s.com/")
