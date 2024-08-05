@@ -56,3 +56,9 @@ def load_settings(path=DEFAULT_PATH):
         return Settings(**{k: v for k, v in raw.items() if k in known}).clean()
     except (TypeError, ValueError):
         return Settings()
+
+
+def save_settings(settings, path=DEFAULT_PATH):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(asdict(settings.clean()), indent=2), encoding="utf-8")
