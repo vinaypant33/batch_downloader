@@ -42,3 +42,17 @@ class Settings:
     @staticmethod
     def patterns(text):
         return tuple(p.strip() for p in text.split(",") if p.strip())
+
+
+def load_settings(path=DEFAULT_PATH):
+    """Settings from disk, or defaults if the file is missing or broken."""
+    path = Path(path)
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return Settings()
+    known = {f.name for f in fields(Settings)}
+    try:
+        return Settings(**{k: v for k, v in raw.items() if k in known}).clean()
+    except (TypeError, ValueError):
+        return Settings()
