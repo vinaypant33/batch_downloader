@@ -39,3 +39,10 @@ class TestManifest(unittest.TestCase):
         self.assertEqual(self.manifest.path_for_hash("abc"), "/files/a.pdf")
         self.assertIsNone(self.manifest.path_for_hash("abc", exclude_url="https://s.com/a.pdf"))
         self.assertIsNone(self.manifest.path_for_hash("zzz"))
+
+    def test_summary(self):
+        self.manifest.record(result("u1", size=100))
+        self.manifest.record(result("u2", size=50))
+        self.manifest.record(result("u3", status="failed", size=0))
+        self.assertEqual(self.manifest.summary(),
+                         {"downloaded": {"files": 2, "bytes": 150}, "failed": {"files": 1, "bytes": 0}})
