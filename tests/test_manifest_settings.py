@@ -46,3 +46,13 @@ class TestManifest(unittest.TestCase):
         self.manifest.record(result("u3", status="failed", size=0))
         self.assertEqual(self.manifest.summary(),
                          {"downloaded": {"files": 2, "bytes": 150}, "failed": {"files": 1, "bytes": 0}})
+
+    def test_export_csv_oldest_first(self):
+        self.manifest.record(result("first"))
+        self.manifest.record(result("second"))
+        out = self.folder / "report.csv"
+        self.assertEqual(self.manifest.export_csv(out), 2)
+        with open(out, newline="", encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+        self.assertEqual([r["url"] for r in rows], ["first", "second"])
+        self.assertEqual(list(rows[0]), list(Manifest.COLUMNS))
