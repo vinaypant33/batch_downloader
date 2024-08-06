@@ -56,3 +56,9 @@ class TestManifest(unittest.TestCase):
             rows = list(csv.DictReader(handle))
         self.assertEqual([r["url"] for r in rows], ["first", "second"])
         self.assertEqual(list(rows[0]), list(Manifest.COLUMNS))
+
+    def test_history_survives_reopening(self):
+        self.manifest.record(result("kept"))
+        self.manifest.close()
+        self.manifest = Manifest(self.folder)
+        self.assertEqual(self.manifest.history()[0]["url"], "kept")
