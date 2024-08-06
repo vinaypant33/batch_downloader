@@ -62,3 +62,15 @@ class TestManifest(unittest.TestCase):
         self.manifest.close()
         self.manifest = Manifest(self.folder)
         self.assertEqual(self.manifest.history()[0]["url"], "kept")
+
+
+class TestSettings(unittest.TestCase):
+    def setUp(self):
+        self.path = Path(tempfile.mkdtemp()) / "settings.json"
+
+    def test_round_trip(self):
+        s = Settings(last_url="https://s.com", depth=3, categories=["videos"], theme="light")
+        save_settings(s, self.path)
+        loaded = load_settings(self.path)
+        self.assertEqual((loaded.last_url, loaded.depth, loaded.categories, loaded.theme),
+                         ("https://s.com", 3, ["videos"], "light"))
