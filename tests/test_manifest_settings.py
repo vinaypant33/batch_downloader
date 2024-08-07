@@ -79,3 +79,9 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(load_settings(self.path), Settings())
         self.path.write_text("{not json", encoding="utf-8")
         self.assertEqual(load_settings(self.path), Settings())
+
+    def test_bad_values_are_clamped(self):
+        self.path.write_text(json.dumps({"depth": 99, "workers": 0, "delay": -3, "categories": ["nope"],
+                                         "theme": "pink", "unknown_key": 1}), encoding="utf-8")
+        s = load_settings(self.path)
+        self.assertEqual((s.depth, s.workers, s.delay, s.categories, s.theme), (5, 1, 0.0, ["documents"], "dark"))
