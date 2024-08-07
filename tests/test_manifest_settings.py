@@ -74,3 +74,8 @@ class TestSettings(unittest.TestCase):
         loaded = load_settings(self.path)
         self.assertEqual((loaded.last_url, loaded.depth, loaded.categories, loaded.theme),
                          ("https://s.com", 3, ["videos"], "light"))
+
+    def test_missing_or_broken_file_gives_defaults(self):
+        self.assertEqual(load_settings(self.path), Settings())
+        self.path.write_text("{not json", encoding="utf-8")
+        self.assertEqual(load_settings(self.path), Settings())
