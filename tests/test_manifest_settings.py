@@ -85,3 +85,11 @@ class TestSettings(unittest.TestCase):
                                          "theme": "pink", "unknown_key": 1}), encoding="utf-8")
         s = load_settings(self.path)
         self.assertEqual((s.depth, s.workers, s.delay, s.categories, s.theme), (5, 1, 0.0, ["documents"], "dark"))
+
+    def test_patterns(self):
+        self.assertEqual(Settings.patterns(" *report* , ,*2024*"), ("*report*", "*2024*"))
+        self.assertEqual(Settings.patterns(""), ())
+
+
+if __name__ == "__main__":
+    unittest.main()
