@@ -21,3 +21,13 @@ def setup_logging(folder, level=logging.INFO):
     handler.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(handler)
     return path
+
+
+def close_logging(folder):
+    """Detach and close the handler for a folder (so the file can be moved or deleted)."""
+    path = (Path(folder) / LOG_NAME).resolve()
+    logger = logging.getLogger("batch_downloader")
+    for handler in list(logger.handlers):
+        if isinstance(handler, logging.FileHandler) and Path(handler.baseFilename) == path:
+            logger.removeHandler(handler)
+            handler.close()
