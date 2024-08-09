@@ -57,3 +57,27 @@ class DownloadJob(threading.Thread):
         self._unpaused.set()
         self.files = []
         self.results = []
+
+    def stop(self):
+        self._stop_requested.set()
+        self._unpaused.set()          # wake a paused job so it can stop
+
+    def pause(self):
+        self._unpaused.clear()
+        self.emit("status", "Paused")
+
+    def resume(self):
+        self._unpaused.set()
+        self.emit("status", "Resumed")
+
+    @property
+    def paused(self):
+        return not self._unpaused.is_set()
+
+    def should_stop(self):
+        """Called often by the crawler and downloader; blocks while paused."""
+        self._unpaused.wait()
+        return self._stop_requested.is_set()
+
+    def emit(self, kind, payload=None):
+        self.events.put((kind, payload))
