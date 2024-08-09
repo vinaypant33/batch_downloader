@@ -45,3 +45,15 @@ class JobOptions:
     list_only: bool = False
     files: tuple = ()              # given files: skip the crawl (used by "Retry failed")
     session: object = field(default=None, repr=False)
+
+
+class DownloadJob(threading.Thread):
+    def __init__(self, options, events=None):
+        super().__init__(daemon=True)
+        self.options = options
+        self.events = events or queue.Queue()
+        self._stop_requested = threading.Event()
+        self._unpaused = threading.Event()
+        self._unpaused.set()
+        self.files = []
+        self.results = []
