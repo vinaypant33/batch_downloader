@@ -81,3 +81,12 @@ class DownloadJob(threading.Thread):
 
     def emit(self, kind, payload=None):
         self.events.put((kind, payload))
+
+    def build_filter(self):
+        o = self.options
+        return FileFilter(
+            categories=frozenset(o.categories),
+            include=tuple(o.include),
+            exclude=tuple(o.exclude),
+            max_bytes=o.max_size_mb * 1024 * 1024,
+        )
