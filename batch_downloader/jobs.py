@@ -90,3 +90,24 @@ class DownloadJob(threading.Thread):
             exclude=tuple(o.exclude),
             max_bytes=o.max_size_mb * 1024 * 1024,
         )
+
+    def crawl(self, file_filter):
+        o = self.options
+        crawler = Crawler(
+            o.url, depth=o.depth, file_filter=file_filter, same_site_only=o.same_site_only,
+            delay=o.delay, respect_robots=o.respect_robots, use_sitemap=o.use_sitemap, session=o.session,
+        )
+        self.emit("status", f"Crawling {crawler.start_url}")
+        count = 0
+
+        def on_file(found):
+            nonlocal count
+            self.emit("found", (count, found))   # files are numbered in the order found
+            count += 1
+
+        self.files = crawler.crawl(
+            on_page=lambda url, depth: self.emit("page", (url, depth)),
+            on_file=on_file,
+            should_stop=self.should_stop,
+        )
+        return crawler.stats
