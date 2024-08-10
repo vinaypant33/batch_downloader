@@ -129,3 +129,9 @@ class DownloadJob(threading.Thread):
             )
         finally:
             manifest.close()
+
+    def use_given_files(self):
+        """Skip the crawl and download a known list of files."""
+        self.files = list(self.options.files)
+        for index, found in enumerate(self.files):
+            self.emit("found", (index, found))
