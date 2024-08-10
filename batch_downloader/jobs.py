@@ -135,3 +135,27 @@ class DownloadJob(threading.Thread):
         self.files = list(self.options.files)
         for index, found in enumerate(self.files):
             self.emit("found", (index, found))
+
+    def run(self):
+        summary = {"files": 0, "pages": 0, "stopped": False, "error": None, "statuses": {}}
+        log = logging.getLogger(__name__)
+        try:
+            setup_logging(self.options.folder)
+            log.info("job started: %s", self.options.url)
+            file_filter = self.build_filter()
+            if self.options.files:
+                self.use_given_files()
+                summary.update(files=len(self.files))
+            else:
+                stats = self.crawl(file_filter)
+                summary.update(files=len(self.files), pages=stats.pages, skipped_robots=stats.skipped_robots)
+            if self.files and not self.options.list_only and not self._stop_requested.is_set():
+                self.download(file_filter)
+                summary["statuses"] = dict(Counter(r.status for r in self.results))
+        except (ValueError, OSError) as error:
+            summary["error"] = str(error)
+            log.error("job failed: %s", error)
+        summary["stopped"] = self._stop_requested.is_set()
+        log.info("job finished: %s", summary)
+        close_logging(self.options.folder)
+        self.emit("done", summary)
