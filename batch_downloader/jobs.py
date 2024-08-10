@@ -111,3 +111,21 @@ class DownloadJob(threading.Thread):
             should_stop=self.should_stop,
         )
         return crawler.stats
+
+    def download(self, file_filter):
+        o = self.options
+        limiter = TokenBucket(o.speed_limit_kb * 1024) if o.speed_limit_kb else None
+        manifest = Manifest(o.folder)
+        try:
+            downloader = Downloader(o.folder, session=o.session, subfolders=o.subfolders,
+                                    file_filter=file_filter, rate_limiter=limiter, manifest=manifest)
+            index = {f.url: i for i, f in enumerate(self.files)}
+            self.emit("status", f"Downloading {len(self.files)} files")
+            self.results = downloader.download_all(
+                self.files, workers=o.workers,
+                on_progress=lambda f, done, total: self.emit("progress", (index[f.url], done, total)),
+                on_result=lambda i, result: self.emit("result", (i, result)),
+                should_stop=self.should_stop,
+            )
+        finally:
+            manifest.close()
