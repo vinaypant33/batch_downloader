@@ -26,3 +26,15 @@ from .urls import normalize
 from .utils import human_size, shorten
 
 POLL_MS = 100
+
+
+def validate(url, categories, folder):
+    """Problems with the user's input, as a list of messages (empty when fine)."""
+    problems = []
+    if not normalize(url or ""):
+        problems.append("Enter a website address starting with http:// or https://")
+    if not categories:
+        problems.append("Tick at least one file type")
+    if not folder:
+        problems.append("Choose a folder to save the files in")
+    return problems
