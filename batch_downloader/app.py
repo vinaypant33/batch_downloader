@@ -48,3 +48,25 @@ def open_folder(path):
         subprocess.run(["open", path], check=False)
     else:
         subprocess.run(["xdg-open", path], check=False)
+
+
+class App(ctk.CTk):
+    def __init__(self, settings_path=None):
+        super().__init__()
+        self.settings_path = settings_path
+        self.settings = load_settings(settings_path) if settings_path else load_settings()
+        ctk.set_appearance_mode(self.settings.theme)
+        ctk.set_default_color_theme("blue")
+        self.title("Batch Downloader")
+        self.geometry("900x660")
+        self.minsize(820, 560)
+        self.job = None
+        self.events = queue.Queue()
+        self.total_files = 0
+        self.finished_files = 0
+        self.rows = {}          # table row -> {"found": FoundFile, "result": DownloadResult}
+        self.build()
+        self.load_into_controls()
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.bind("<Control-Return>", lambda _e: self.start())
+        self.bind("<Escape>", lambda _e: self.stop())
