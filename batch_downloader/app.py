@@ -38,3 +38,13 @@ def validate(url, categories, folder):
     if not folder:
         problems.append("Choose a folder to save the files in")
     return problems
+
+
+def open_folder(path):
+    """Open a folder in Explorer / Finder / the file manager."""
+    if sys.platform.startswith("win"):
+        os.startfile(path)  # noqa: S606 - opening the user's own folder
+    elif sys.platform == "darwin":
+        subprocess.run(["open", path], check=False)
+    else:
+        subprocess.run(["xdg-open", path], check=False)
