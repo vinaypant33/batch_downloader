@@ -90,3 +90,20 @@ class App(ctk.CTk):
         self.url_entry.bind("<Return>", lambda _e: self.start())
         self.start_button = ctk.CTkButton(row, text="Find & Download", width=150, command=self.start)
         self.start_button.grid(row=0, column=1)
+
+    def build_options(self):
+        frame = ctk.CTkFrame(self)
+        frame.grid(row=1, column=0, sticky="ew", padx=12, pady=6)
+        self.category_vars = {}
+        for column, category in enumerate(CATEGORIES):
+            var = tk.BooleanVar()
+            self.category_vars[category] = var
+            ctk.CTkCheckBox(frame, text=LABELS[category], variable=var).grid(
+                row=0, column=column, padx=8, pady=10, sticky="w")
+        depth_box = ctk.CTkFrame(frame, fg_color="transparent")
+        depth_box.grid(row=0, column=len(CATEGORIES), padx=8)
+        self.depth_label = ctk.CTkLabel(depth_box, text="Depth: 1")
+        self.depth_label.pack()
+        self.depth_slider = ctk.CTkSlider(depth_box, from_=0, to=5, number_of_steps=5, width=120,
+                                          command=lambda v: self.depth_label.configure(text=f"Depth: {round(v)}"))
+        self.depth_slider.pack()
