@@ -80,3 +80,13 @@ class App(ctk.CTk):
         self.build_advanced()
         self.build_table()
         self.build_footer()
+
+    def build_url_row(self):
+        row = ctk.CTkFrame(self, fg_color="transparent")
+        row.grid(row=0, column=0, sticky="ew", padx=12, pady=(12, 6))
+        row.grid_columnconfigure(0, weight=1)
+        self.url_entry = ctk.CTkEntry(row, placeholder_text="Website address, e.g. https://example.com/downloads")
+        self.url_entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
+        self.url_entry.bind("<Return>", lambda _e: self.start())
+        self.start_button = ctk.CTkButton(row, text="Find & Download", width=150, command=self.start)
+        self.start_button.grid(row=0, column=1)
