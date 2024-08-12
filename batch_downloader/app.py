@@ -107,3 +107,12 @@ class App(ctk.CTk):
         self.depth_slider = ctk.CTkSlider(depth_box, from_=0, to=5, number_of_steps=5, width=120,
                                           command=lambda v: self.depth_label.configure(text=f"Depth: {round(v)}"))
         self.depth_slider.pack()
+
+    def build_folder_row(self):
+        row = ctk.CTkFrame(self, fg_color="transparent")
+        row.grid(row=2, column=0, sticky="ew", padx=12, pady=6)
+        row.grid_columnconfigure(0, weight=1)
+        self.folder_entry = ctk.CTkEntry(row, placeholder_text="Folder to save files in")
+        self.folder_entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
+        ctk.CTkButton(row, text="Choose…", width=90, command=self.choose_folder).grid(row=0, column=1, padx=(0, 8))
+        ctk.CTkButton(row, text="Open folder", width=100, command=self.open_download_folder).grid(row=0, column=2)
