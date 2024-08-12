@@ -70,3 +70,13 @@ class App(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.bind("<Control-Return>", lambda _e: self.start())
         self.bind("<Escape>", lambda _e: self.stop())
+
+    def build(self):
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(4, weight=1)
+        self.build_url_row()
+        self.build_options()
+        self.build_folder_row()
+        self.build_advanced()
+        self.build_table()
+        self.build_footer()
