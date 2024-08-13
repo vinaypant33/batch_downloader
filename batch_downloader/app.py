@@ -116,3 +116,27 @@ class App(ctk.CTk):
         self.folder_entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
         ctk.CTkButton(row, text="Choose…", width=90, command=self.choose_folder).grid(row=0, column=1, padx=(0, 8))
         ctk.CTkButton(row, text="Open folder", width=100, command=self.open_download_folder).grid(row=0, column=2)
+
+    def build_advanced(self):
+        frame = ctk.CTkFrame(self)
+        frame.grid(row=3, column=0, sticky="ew", padx=12, pady=6)
+        self.include_entry = self._labelled_entry(frame, "Only names like", "*report*, *2024*", 0)
+        self.exclude_entry = self._labelled_entry(frame, "Skip names like", "*thumb*", 2)
+        self.max_size_entry = self._labelled_entry(frame, "Max size (MB)", "0 = no limit", 4, width=110)
+        self.speed_entry = self._labelled_entry(frame, "Speed limit (KB/s)", "0 = unlimited", 6, width=110)
+        self.robots_var = tk.BooleanVar(value=True)
+        self.same_site_var = tk.BooleanVar(value=True)
+        self.sitemap_var = tk.BooleanVar(value=False)
+        self.list_only_var = tk.BooleanVar(value=False)
+        for column, (text, var) in enumerate([
+            ("Respect robots.txt", self.robots_var), ("Stay on this site", self.same_site_var),
+            ("Use sitemap.xml", self.sitemap_var), ("Only list files", self.list_only_var),
+        ]):
+            ctk.CTkCheckBox(frame, text=text, variable=var).grid(
+                row=1, column=column * 2, columnspan=2, padx=8, pady=(0, 10), sticky="w")
+
+    def _labelled_entry(self, frame, label, placeholder, column, width=160):
+        ctk.CTkLabel(frame, text=label).grid(row=0, column=column, padx=(8, 4), pady=10, sticky="e")
+        entry = ctk.CTkEntry(frame, placeholder_text=placeholder, width=width)
+        entry.grid(row=0, column=column + 1, padx=(0, 8), pady=10, sticky="w")
+        return entry
