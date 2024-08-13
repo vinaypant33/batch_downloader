@@ -140,3 +140,24 @@ class App(ctk.CTk):
         entry = ctk.CTkEntry(frame, placeholder_text=placeholder, width=width)
         entry.grid(row=0, column=column + 1, padx=(0, 8), pady=10, sticky="w")
         return entry
+
+    def build_table(self):
+        frame = ctk.CTkFrame(self)
+        frame.grid(row=4, column=0, sticky="nsew", padx=12, pady=6)
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(0, weight=1)
+        self.style_table()
+        columns = ("no", "file", "type", "size", "status")
+        self.table = ttk.Treeview(frame, columns=columns, show="headings", style="Files.Treeview")
+        for column, title, width, anchor in [
+            ("no", "#", 50, "e"), ("file", "File", 420, "w"), ("type", "Type", 110, "w"),
+            ("size", "Size", 100, "e"), ("status", "Status", 140, "w"),
+        ]:
+            self.table.heading(column, text=title)
+            self.table.column(column, width=width, anchor=anchor, stretch=column == "file")
+        scroll = ctk.CTkScrollbar(frame, command=self.table.yview)
+        self.table.configure(yscrollcommand=scroll.set)
+        self.table.grid(row=0, column=0, sticky="nsew", padx=(6, 0), pady=6)
+        scroll.grid(row=0, column=1, sticky="ns", pady=6)
+        self.table.bind("<Double-1>", self.open_selected_file)
+        self.table.bind("<Button-3>", self.show_row_menu)
