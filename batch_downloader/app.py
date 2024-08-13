@@ -171,3 +171,28 @@ class App(ctk.CTk):
                         foreground=foreground, rowheight=26, borderwidth=0)
         style.configure("Files.Treeview.Heading", background=header, foreground=foreground, relief="flat")
         style.map("Files.Treeview", background=[("selected", "#1f6aa5")], foreground=[("selected", "white")])
+
+    def build_footer(self):
+        footer = ctk.CTkFrame(self, fg_color="transparent")
+        footer.grid(row=5, column=0, sticky="ew", padx=12, pady=(6, 12))
+        footer.grid_columnconfigure(0, weight=1)
+        self.progress = ctk.CTkProgressBar(footer)
+        self.progress.set(0)
+        self.progress.grid(row=0, column=0, columnspan=6, sticky="ew", pady=(0, 6))
+        self.status_label = ctk.CTkLabel(footer, text="Ready", anchor="w")
+        self.status_label.grid(row=1, column=0, sticky="ew")
+        self.totals_label = ctk.CTkLabel(footer, text="", anchor="w", text_color=("gray35", "gray65"))
+        self.totals_label.grid(row=2, column=0, sticky="ew")
+        self.pause_button = ctk.CTkButton(footer, text="Pause", width=80, state="disabled", command=self.toggle_pause)
+        self.stop_button = ctk.CTkButton(footer, text="Stop", width=80, state="disabled",
+                                         fg_color="#b33a3a", hover_color="#8f2e2e", command=self.stop)
+        self.pause_button.grid(row=1, column=1, padx=4)
+        self.stop_button.grid(row=1, column=2, padx=4)
+        self.retry_button = ctk.CTkButton(footer, text="Retry failed", width=100, state="disabled",
+                                          command=self.retry_failed)
+        self.retry_button.grid(row=2, column=1, columnspan=2, padx=4, pady=(4, 0))
+        ctk.CTkButton(footer, text="History", width=80, command=self.show_history).grid(row=1, column=3, padx=4)
+        ctk.CTkButton(footer, text="Export CSV", width=90, command=self.export_csv).grid(row=1, column=4, padx=4)
+        self.theme_switch = ctk.CTkSegmentedButton(footer, values=["dark", "light"], command=self.set_theme)
+        self.theme_switch.grid(row=1, column=5, padx=(4, 0))
+        ctk.CTkButton(footer, text="About", width=70, command=self.show_about).grid(row=2, column=5, pady=(4, 0))
