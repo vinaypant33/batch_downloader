@@ -161,3 +161,13 @@ class App(ctk.CTk):
         scroll.grid(row=0, column=1, sticky="ns", pady=6)
         self.table.bind("<Double-1>", self.open_selected_file)
         self.table.bind("<Button-3>", self.show_row_menu)
+
+    def style_table(self):
+        dark = ctk.get_appearance_mode() == "Dark"
+        background, foreground, header = ("#1f2328", "#e6e6e6", "#2b3138") if dark else ("#ffffff", "#1d1d1f", "#eef1f4")
+        style = ttk.Style(self)
+        style.theme_use("default")
+        style.configure("Files.Treeview", background=background, fieldbackground=background,
+                        foreground=foreground, rowheight=26, borderwidth=0)
+        style.configure("Files.Treeview.Heading", background=header, foreground=foreground, relief="flat")
+        style.map("Files.Treeview", background=[("selected", "#1f6aa5")], foreground=[("selected", "white")])
