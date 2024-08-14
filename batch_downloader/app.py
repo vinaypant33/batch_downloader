@@ -249,3 +249,31 @@ class App(ctk.CTk):
                 save_settings(self.settings)
         except OSError:
             pass  # settings are a convenience; never block the user over them
+
+    def start(self, files=()):
+        if self.job and self.job.is_alive():
+            return
+        s = self.read_controls()
+        problems = validate(s.last_url, s.categories, s.folder)
+        if problems:
+            messagebox.showwarning("Batch Downloader", "\n".join(problems), parent=self)
+            return
+        self.settings = s.clean()
+        self.save()
+        self.table.delete(*self.table.get_children())
+        self.rows = {}
+        self.total_files = self.finished_files = 0
+        self.progress.set(0)
+        self.totals_label.configure(text="")
+        options = JobOptions(
+            url=s.last_url, folder=s.folder, categories=tuple(s.categories), depth=s.depth, delay=s.delay,
+            workers=s.workers, speed_limit_kb=s.speed_limit_kb, respect_robots=s.respect_robots,
+            same_site_only=s.same_site_only, use_sitemap=s.use_sitemap, subfolders=s.subfolders,
+            include=Settings.patterns(s.include), exclude=Settings.patterns(s.exclude),
+            max_size_mb=s.max_size_mb, list_only=self.list_only_var.get(), files=tuple(files),
+        )
+        self.events = queue.Queue()
+        self.job = DownloadJob(options, self.events)
+        self.job.start()
+        self.set_running(True)
+        self.after(POLL_MS, self.poll)
