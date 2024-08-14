@@ -240,3 +240,12 @@ class App(ctk.CTk):
             theme=self.theme_switch.get() or "dark",
         )
         return s
+
+    def save(self):
+        try:
+            if self.settings_path:
+                save_settings(self.settings, self.settings_path)
+            else:
+                save_settings(self.settings)
+        except OSError:
+            pass  # settings are a convenience; never block the user over them
