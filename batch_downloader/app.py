@@ -217,3 +217,26 @@ class App(ctk.CTk):
         self.same_site_var.set(s.same_site_only)
         self.sitemap_var.set(s.use_sitemap)
         self.theme_switch.set(s.theme if s.theme in ("dark", "light") else "dark")
+
+    def read_controls(self):
+        def number(entry):
+            text = entry.get().strip()
+            return int(text) if text.isdigit() else 0
+
+        s = Settings(
+            last_url=self.url_entry.get().strip(),
+            folder=self.folder_entry.get().strip(),
+            categories=[c for c, var in self.category_vars.items() if var.get()],
+            depth=round(self.depth_slider.get()),
+            delay=self.settings.delay,
+            workers=self.settings.workers,
+            speed_limit_kb=number(self.speed_entry),
+            respect_robots=self.robots_var.get(),
+            same_site_only=self.same_site_var.get(),
+            use_sitemap=self.sitemap_var.get(),
+            include=self.include_entry.get().strip(),
+            exclude=self.exclude_entry.get().strip(),
+            max_size_mb=number(self.max_size_entry),
+            theme=self.theme_switch.get() or "dark",
+        )
+        return s
