@@ -196,3 +196,24 @@ class App(ctk.CTk):
         self.theme_switch = ctk.CTkSegmentedButton(footer, values=["dark", "light"], command=self.set_theme)
         self.theme_switch.grid(row=1, column=5, padx=(4, 0))
         ctk.CTkButton(footer, text="About", width=70, command=self.show_about).grid(row=2, column=5, pady=(4, 0))
+
+    def load_into_controls(self):
+        s = self.settings
+        if s.last_url:
+            self.url_entry.insert(0, s.last_url)
+        self.folder_entry.insert(0, s.folder)
+        for category, var in self.category_vars.items():
+            var.set(category in s.categories)
+        self.depth_slider.set(s.depth)
+        self.depth_label.configure(text=f"Depth: {s.depth}")
+        for entry, value in [(self.include_entry, s.include), (self.exclude_entry, s.exclude)]:
+            if value:
+                entry.insert(0, value)
+        if s.max_size_mb:
+            self.max_size_entry.insert(0, str(s.max_size_mb))
+        if s.speed_limit_kb:
+            self.speed_entry.insert(0, str(s.speed_limit_kb))
+        self.robots_var.set(s.respect_robots)
+        self.same_site_var.set(s.same_site_only)
+        self.sitemap_var.set(s.use_sitemap)
+        self.theme_switch.set(s.theme if s.theme in ("dark", "light") else "dark")
