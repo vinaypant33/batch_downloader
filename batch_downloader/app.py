@@ -283,3 +283,15 @@ class App(ctk.CTk):
         self.pause_button.configure(state="normal" if running else "disabled", text="Pause")
         self.stop_button.configure(state="normal" if running else "disabled")
         self.retry_button.configure(state="disabled")
+
+    def poll(self):
+        """Apply every event the job has sent since the last poll."""
+        finished = False
+        try:
+            while True:
+                kind, payload = self.events.get_nowait()
+                finished = self.handle(kind, payload) or finished
+        except queue.Empty:
+            pass
+        if not finished:
+            self.after(POLL_MS, self.poll)
