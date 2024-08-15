@@ -327,3 +327,18 @@ class App(ctk.CTk):
             self.on_done(payload)
             return True
         return False
+
+    def on_done(self, summary):
+        self.set_running(False)
+        self.title("Batch Downloader")
+        if self.failed_files():
+            self.retry_button.configure(state="normal")
+        if summary.get("error"):
+            self.status_label.configure(text=f"Error: {summary['error']}")
+            return
+        counts = ", ".join(f"{n} {status}" for status, n in sorted(summary.get("statuses", {}).items()))
+        word = "Stopped" if summary.get("stopped") else "Done"
+        self.status_label.configure(
+            text=f"{word}: {summary['files']} files found on {summary['pages']} pages" + (f" ({counts})" if counts else ""))
+        if not summary.get("stopped"):
+            self.progress.set(1)
