@@ -277,3 +277,9 @@ class App(ctk.CTk):
         self.job.start()
         self.set_running(True)
         self.after(POLL_MS, self.poll)
+
+    def set_running(self, running):
+        self.start_button.configure(state="disabled" if running else "normal")
+        self.pause_button.configure(state="normal" if running else "disabled", text="Pause")
+        self.stop_button.configure(state="normal" if running else "disabled")
+        self.retry_button.configure(state="disabled")
