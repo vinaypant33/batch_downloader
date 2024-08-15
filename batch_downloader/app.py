@@ -295,3 +295,35 @@ class App(ctk.CTk):
             pass
         if not finished:
             self.after(POLL_MS, self.poll)
+
+    def handle(self, kind, payload):
+        if kind == "status":
+            self.status_label.configure(text=payload)
+        elif kind == "page":
+            url, depth = payload
+            self.status_label.configure(text=f"Crawling (depth {depth}): {shorten(url, 80)}")
+        elif kind == "found":
+            index, found = payload
+            self.total_files = index + 1
+            name = safe_filename(found.url)
+            self.table.insert("", "end", iid=str(index),
+                              values=(index + 1, shorten(name, 70), found.category, "", "found"))
+            self.rows[str(index)] = {"found": found, "result": None}
+        elif kind == "progress":
+            index, done, total = payload
+            percent = f"{done * 100 // total}%" if total else human_size(done)
+            self.table.set(str(index), "status", f"downloading {percent}")
+        elif kind == "result":
+            index, result = payload
+            self.finished_files += 1
+            self.table.set(str(index), "size", human_size(result.size) if result.size else "")
+            self.table.set(str(index), "status", result.status if not result.error else f"{result.status}: {result.error}")
+            self.rows[str(index)]["result"] = result
+            if self.total_files:
+                self.progress.set(self.finished_files / self.total_files)
+                self.title(f"Batch Downloader - {self.finished_files * 100 // self.total_files}%")
+            self.update_totals()
+        elif kind == "done":
+            self.on_done(payload)
+            return True
+        return False
