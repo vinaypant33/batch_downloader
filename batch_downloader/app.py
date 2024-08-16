@@ -342,3 +342,18 @@ class App(ctk.CTk):
             text=f"{word}: {summary['files']} files found on {summary['pages']} pages" + (f" ({counts})" if counts else ""))
         if not summary.get("stopped"):
             self.progress.set(1)
+
+    def toggle_pause(self):
+        if not self.job:
+            return
+        if self.job.paused:
+            self.job.resume()
+            self.pause_button.configure(text="Pause")
+        else:
+            self.job.pause()
+            self.pause_button.configure(text="Resume")
+
+    def stop(self):
+        if self.job:
+            self.job.stop()
+            self.status_label.configure(text="Stopping…")
