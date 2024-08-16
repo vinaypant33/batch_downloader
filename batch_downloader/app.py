@@ -393,3 +393,16 @@ class App(ctk.CTk):
                                             human_size(row["size"]), row["path"] or row["url"]))
         table.pack(fill="both", expand=True, padx=10, pady=10)
         window.after(100, window.lift)
+
+    def export_csv(self):
+        folder = self.folder_entry.get().strip()
+        if not folder or not Path(folder).is_dir():
+            messagebox.showinfo("Batch Downloader", "No downloads in this folder yet.", parent=self)
+            return
+        target = filedialog.asksaveasfilename(parent=self, defaultextension=".csv",
+                                              initialfile="downloads.csv", filetypes=[("CSV", "*.csv")])
+        if target:
+            manifest = Manifest(folder)
+            count = manifest.export_csv(target)
+            manifest.close()
+            self.status_label.configure(text=f"Exported {count} rows to {target}")
