@@ -357,3 +357,16 @@ class App(ctk.CTk):
         if self.job:
             self.job.stop()
             self.status_label.configure(text="Stopping…")
+
+    def choose_folder(self):
+        folder = filedialog.askdirectory(parent=self, initialdir=self.folder_entry.get() or str(Path.home()))
+        if folder:
+            self.folder_entry.delete(0, "end")
+            self.folder_entry.insert(0, folder)
+
+    def open_download_folder(self):
+        folder = self.folder_entry.get().strip()
+        if folder and Path(folder).is_dir():
+            open_folder(folder)
+        else:
+            messagebox.showinfo("Batch Downloader", "The folder does not exist yet.", parent=self)
