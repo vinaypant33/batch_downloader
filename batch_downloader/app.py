@@ -370,3 +370,26 @@ class App(ctk.CTk):
             open_folder(folder)
         else:
             messagebox.showinfo("Batch Downloader", "The folder does not exist yet.", parent=self)
+
+    def show_history(self):
+        folder = self.folder_entry.get().strip()
+        if not folder or not Path(folder).is_dir():
+            messagebox.showinfo("Batch Downloader", "No downloads in this folder yet.", parent=self)
+            return
+        manifest = Manifest(folder)
+        rows = manifest.history()
+        manifest.close()
+        window = ctk.CTkToplevel(self)
+        window.title("Download history")
+        window.geometry("860x420")
+        table = ttk.Treeview(window, columns=("when", "status", "type", "size", "file"),
+                             show="headings", style="Files.Treeview")
+        for column, title, width in [("when", "When", 150), ("status", "Status", 100), ("type", "Type", 100),
+                                     ("size", "Size", 90), ("file", "File", 380)]:
+            table.heading(column, text=title)
+            table.column(column, width=width, stretch=column == "file")
+        for row in rows:
+            table.insert("", "end", values=(row["finished_at"], row["status"], row["category"] or "",
+                                            human_size(row["size"]), row["path"] or row["url"]))
+        table.pack(fill="both", expand=True, padx=10, pady=10)
+        window.after(100, window.lift)
