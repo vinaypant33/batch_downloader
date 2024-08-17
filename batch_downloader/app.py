@@ -421,3 +421,12 @@ class App(ctk.CTk):
         self.settings = self.read_controls().clean()
         self.save()
         self.destroy()
+
+
+    def update_totals(self):
+        results = [r["result"] for r in self.rows.values() if r["result"]]
+        done = sum(r.status == "downloaded" for r in results)
+        failed = sum(r.status == "failed" for r in results)
+        size = sum(r.size for r in results if r.status == "downloaded")
+        self.totals_label.configure(
+            text=f"{len(self.rows)} found · {done} downloaded ({human_size(size)}) · {failed} failed")
