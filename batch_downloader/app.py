@@ -448,3 +448,21 @@ class App(ctk.CTk):
         result = row and row["result"]
         if result and result.path and Path(result.path).exists():
             open_folder(result.path)
+
+    def show_row_menu(self, event):
+        iid = self.table.identify_row(event.y)
+        if not iid:
+            return
+        self.table.selection_set(iid)
+        row = self.rows[iid]
+        menu = tk.Menu(self, tearoff=0)
+        menu.add_command(label="Open file", command=self.open_selected_file,
+                         state="normal" if row["result"] and row["result"].path else "disabled")
+        menu.add_command(label="Copy link", command=lambda: self.copy_text(row["found"].url))
+        menu.add_command(label="Open page in browser", command=lambda: webbrowser.open(row["found"].page))
+        menu.tk_popup(event.x_root, event.y_root)
+
+    def copy_text(self, text):
+        self.clipboard_clear()
+        self.clipboard_append(text)
+        self.status_label.configure(text="Link copied")
