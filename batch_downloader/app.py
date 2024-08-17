@@ -406,3 +406,18 @@ class App(ctk.CTk):
             count = manifest.export_csv(target)
             manifest.close()
             self.status_label.configure(text=f"Exported {count} rows to {target}")
+
+    def set_theme(self, theme):
+        ctk.set_appearance_mode(theme)
+        self.style_table()
+        self.settings.theme = theme
+        self.save()
+
+    def on_close(self):
+        if self.job and self.job.is_alive():
+            if not messagebox.askyesno("Batch Downloader", "A download is running. Stop it and quit?", parent=self):
+                return
+            self.job.stop()
+        self.settings = self.read_controls().clean()
+        self.save()
+        self.destroy()
