@@ -430,3 +430,11 @@ class App(ctk.CTk):
         size = sum(r.size for r in results if r.status == "downloaded")
         self.totals_label.configure(
             text=f"{len(self.rows)} found · {done} downloaded ({human_size(size)}) · {failed} failed")
+
+    def failed_files(self):
+        return [r["found"] for r in self.rows.values() if r["result"] and r["result"].status == "failed"]
+
+    def retry_failed(self):
+        files = self.failed_files()
+        if files:
+            self.start(files=files)
