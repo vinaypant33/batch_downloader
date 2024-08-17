@@ -438,3 +438,13 @@ class App(ctk.CTk):
         files = self.failed_files()
         if files:
             self.start(files=files)
+
+    def selected_row(self):
+        selection = self.table.selection()
+        return self.rows.get(selection[0]) if selection else None
+
+    def open_selected_file(self, _event=None):
+        row = self.selected_row()
+        result = row and row["result"]
+        if result and result.path and Path(result.path).exists():
+            open_folder(result.path)
