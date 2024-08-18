@@ -471,3 +471,7 @@ class App(ctk.CTk):
         messagebox.showinfo("Batch Downloader",
                             f"Batch Downloader {__version__}\n\nFinds and downloads files linked from a website.\n"
                             "Shortcuts: Ctrl+Enter start, Esc stop, double-click opens a file.", parent=self)
+
+
+def run():
+    App().mainloop()
