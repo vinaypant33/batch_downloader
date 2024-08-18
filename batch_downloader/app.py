@@ -466,3 +466,8 @@ class App(ctk.CTk):
         self.clipboard_clear()
         self.clipboard_append(text)
         self.status_label.configure(text="Link copied")
+
+    def show_about(self):
+        messagebox.showinfo("Batch Downloader",
+                            f"Batch Downloader {__version__}\n\nFinds and downloads files linked from a website.\n"
+                            "Shortcuts: Ctrl+Enter start, Esc stop, double-click opens a file.", parent=self)
