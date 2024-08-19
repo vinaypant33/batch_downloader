@@ -59,3 +59,34 @@ def print_event(kind, payload):
         _index, result = payload
         detail = human_size(result.size) if result.status in ("downloaded", "duplicate") else (result.error or "")
         print(f"  {result.status:<10} {shorten(result.path or result.url, 80)}  {detail}")
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    events = queue.Queue()
+    job = DownloadJob(options_from(args), events)
+    job.start()
+    try:
+        while True:
+            kind, payload = events.get()
+            if kind == "done":
+                break
+            print_event(kind, payload)
+    except KeyboardInterrupt:
+        print("\nStopping…")
+        job.stop()
+        while events.get()[0] != "done":
+            pass
+        return 130
+    job.join()
+    summary = payload
+    if summary["error"]:
+        print(f"Error: {summary['error']}")
+        return 2
+    counts = Counter(r.status for r in job.results)
+    blocked = summary.get("skipped_robots", 0)
+    print(f"\n{summary['files']} files found on {summary['pages']} pages"
+          + (f"; {blocked} link{'' if blocked == 1 else 's'} blocked by robots.txt" if blocked else ""))
+    if counts:
+        print("  " + ", ".join(f"{n} {status}" for status, n in sorted(counts.items())))
+    return 1 if counts.get("failed") else 0
