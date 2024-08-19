@@ -37,3 +37,13 @@ def build_parser():
     p.add_argument("--flat", action="store_true", help="save everything in one folder, not per type")
     p.add_argument("--list", action="store_true", help="only list the files that would be downloaded")
     return p
+
+
+def options_from(args):
+    return JobOptions(
+        url=args.url, folder=args.out, categories=tuple(args.types), depth=args.depth, delay=args.delay,
+        workers=args.workers, speed_limit_kb=args.speed_limit, respect_robots=not args.ignore_robots,
+        same_site_only=not args.any_site, use_sitemap=args.sitemap, subfolders=not args.flat,
+        include=tuple(args.include), exclude=tuple(args.exclude), max_size_mb=args.max_size,
+        list_only=args.list,
+    )
