@@ -47,3 +47,15 @@ def options_from(args):
         include=tuple(args.include), exclude=tuple(args.exclude), max_size_mb=args.max_size,
         list_only=args.list,
     )
+
+
+def print_event(kind, payload):
+    if kind == "status":
+        print(payload)
+    elif kind == "found":
+        index, found = payload
+        print(f"  found {index + 1:>4}  {found.category:<9} {shorten(found.url, 90)}")
+    elif kind == "result":
+        _index, result = payload
+        detail = human_size(result.size) if result.status in ("downloaded", "duplicate") else (result.error or "")
+        print(f"  {result.status:<10} {shorten(result.path or result.url, 80)}  {detail}")
