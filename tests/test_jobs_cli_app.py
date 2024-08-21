@@ -40,3 +40,12 @@ class TestDownloadJob(unittest.TestCase):
         out = drain(events)
         job.join(5)
         return job, out
+
+    def test_events_tell_the_whole_story(self):
+        job, events = self.run_job(categories=ALL, depth=2)
+        kinds = [k for k, _ in events]
+        self.assertEqual(kinds[-1], "done")
+        self.assertEqual(kinds.count("found"), 9)
+        self.assertEqual(kinds.count("result"), 9)
+        self.assertLess(kinds.index("found"), kinds.index("result"))
+        self.assertEqual(events[-1][1]["statuses"], {"downloaded": 9})
