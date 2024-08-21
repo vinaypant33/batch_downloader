@@ -59,3 +59,13 @@ class TestDownloadJob(unittest.TestCase):
         job, events = self.run_job(categories=("documents",), list_only=True)
         self.assertEqual([k for k, _ in events].count("result"), 0)
         self.assertEqual(list(Path(job.options.folder).rglob("*.pdf")), [])
+
+    def test_stop_before_start(self):
+        options = JobOptions(url=self.server.base, folder=tempfile.mkdtemp(), delay=0, categories=ALL)
+        events = queue.Queue()
+        job = DownloadJob(options, events)
+        job.stop()
+        job.start()
+        summary = drain(events)[-1][1]
+        self.assertTrue(summary["stopped"])
+        self.assertEqual(summary["files"], 0)
