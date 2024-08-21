@@ -49,3 +49,8 @@ class TestDownloadJob(unittest.TestCase):
         self.assertEqual(kinds.count("result"), 9)
         self.assertLess(kinds.index("found"), kinds.index("result"))
         self.assertEqual(events[-1][1]["statuses"], {"downloaded": 9})
+
+    def test_found_files_are_numbered_in_order(self):
+        _, events = self.run_job(categories=ALL, depth=1, list_only=True)
+        numbers = [payload[0] for kind, payload in events if kind == "found"]
+        self.assertEqual(numbers, list(range(len(numbers))))
