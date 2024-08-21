@@ -54,3 +54,8 @@ class TestDownloadJob(unittest.TestCase):
         _, events = self.run_job(categories=ALL, depth=1, list_only=True)
         numbers = [payload[0] for kind, payload in events if kind == "found"]
         self.assertEqual(numbers, list(range(len(numbers))))
+
+    def test_list_only_downloads_nothing(self):
+        job, events = self.run_job(categories=("documents",), list_only=True)
+        self.assertEqual([k for k, _ in events].count("result"), 0)
+        self.assertEqual(list(Path(job.options.folder).rglob("*.pdf")), [])
