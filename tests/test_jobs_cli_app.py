@@ -78,3 +78,10 @@ class TestDownloadJob(unittest.TestCase):
         job.resume()
         self.assertFalse(job.paused)
         self.assertFalse(job.should_stop())
+
+    def test_bad_url_reports_an_error(self):
+        options = JobOptions(url="not a url", folder=tempfile.mkdtemp())
+        events = queue.Queue()
+        DownloadJob(options, events).start()
+        summary = drain(events)[-1][1]
+        self.assertIn("not a web address", summary["error"])
