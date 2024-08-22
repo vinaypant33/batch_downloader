@@ -95,3 +95,10 @@ class TestCli(unittest.TestCase):
         self.assertTrue(options.respect_robots)
         self.assertTrue(options.subfolders)
         self.assertEqual(set(options.categories), set(ALL))
+
+    def test_options_flags(self):
+        args = build_parser().parse_args(["https://s.com", "--types", "audio", "--ignore-robots", "--flat",
+                                          "--any-site", "--include", "*mix*", "--max-size", "5", "--list"])
+        o = options_from(args)
+        self.assertEqual((o.categories, o.respect_robots, o.subfolders, o.same_site_only, o.include,
+                          o.max_size_mb, o.list_only), (("audio",), False, False, False, ("*mix*",), 5, True))
