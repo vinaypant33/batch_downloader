@@ -69,3 +69,12 @@ class TestDownloadJob(unittest.TestCase):
         summary = drain(events)[-1][1]
         self.assertTrue(summary["stopped"])
         self.assertEqual(summary["files"], 0)
+
+    def test_pause_and_resume(self):
+        options = JobOptions(url=self.server.base, folder=tempfile.mkdtemp(), delay=0, categories=ALL)
+        job = DownloadJob(options, queue.Queue())
+        job.pause()
+        self.assertTrue(job.paused)
+        job.resume()
+        self.assertFalse(job.paused)
+        self.assertFalse(job.should_stop())
