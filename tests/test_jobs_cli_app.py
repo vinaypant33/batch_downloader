@@ -85,3 +85,13 @@ class TestDownloadJob(unittest.TestCase):
         DownloadJob(options, events).start()
         summary = drain(events)[-1][1]
         self.assertIn("not a web address", summary["error"])
+
+
+class TestCli(unittest.TestCase):
+    def test_parser_defaults(self):
+        args = build_parser().parse_args(["https://s.com"])
+        options = options_from(args)
+        self.assertEqual(options.depth, 1)
+        self.assertTrue(options.respect_robots)
+        self.assertTrue(options.subfolders)
+        self.assertEqual(set(options.categories), set(ALL))
