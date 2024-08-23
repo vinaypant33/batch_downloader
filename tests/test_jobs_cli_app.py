@@ -121,3 +121,9 @@ class TestCli(unittest.TestCase):
                              "--depth", "0", "--types", "documents"])
         self.assertEqual(code, 1)
         self.assertIn("1 failed", out.getvalue())
+
+
+class TestAppHelpers(unittest.TestCase):
+    def test_validate(self):
+        self.assertEqual(validate("https://s.com", ["documents"], "C:/x"), [])
+        self.assertEqual(len(validate("s.com", [], "")), 3)
