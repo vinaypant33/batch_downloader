@@ -111,3 +111,13 @@ class TestCli(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("2 downloaded", out.getvalue())
         self.assertIn("1 link blocked by robots.txt", out.getvalue())
+
+    def test_failed_download_exit_code(self):
+        with TestServer() as server:
+            server.fail("/flaky/docs/report.pdf", times=99)   # broken.html links here
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                code = main([server.base + "broken.html", "--out", tempfile.mkdtemp(), "--delay", "0",
+                             "--depth", "0", "--types", "documents"])
+        self.assertEqual(code, 1)
+        self.assertIn("1 failed", out.getvalue())
