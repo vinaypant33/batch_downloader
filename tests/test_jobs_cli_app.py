@@ -102,3 +102,12 @@ class TestCli(unittest.TestCase):
         o = options_from(args)
         self.assertEqual((o.categories, o.respect_robots, o.subfolders, o.same_site_only, o.include,
                           o.max_size_mb, o.list_only), (("audio",), False, False, False, ("*mix*",), 5, True))
+
+    def test_run_downloads_and_exits_zero(self):
+        with TestServer() as server:
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                code = main([server.base, "--out", tempfile.mkdtemp(), "--delay", "0", "--types", "documents"])
+        self.assertEqual(code, 0)
+        self.assertIn("2 downloaded", out.getvalue())
+        self.assertIn("1 link blocked by robots.txt", out.getvalue())
