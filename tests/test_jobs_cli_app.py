@@ -127,3 +127,54 @@ class TestAppHelpers(unittest.TestCase):
     def test_validate(self):
         self.assertEqual(validate("https://s.com", ["documents"], "C:/x"), [])
         self.assertEqual(len(validate("s.com", [], "")), 3)
+
+
+def display_available():
+    try:
+        root = tkinter.Tk()
+        root.destroy()
+        return True
+    except tkinter.TclError:
+        return False
+
+
+@unittest.skipUnless(display_available(), "needs a display")
+class TestAppWindow(unittest.TestCase):
+    def test_hidden_window_runs_a_job(self):
+        import time
+
+        from batch_downloader.app import App
+        with TestServer() as server:
+            folder = Path(tempfile.mkdtemp())
+            app = App(settings_path=folder / "settings.json")
+            app.withdraw()
+            app.url_entry.insert(0, server.base)
+            app.folder_entry.delete(0, "end")
+            app.folder_entry.insert(0, str(folder / "files"))
+            app.settings.delay = 0
+            for var in app.category_vars.values():
+                var.set(False)
+            app.category_vars["documents"].set(True)
+            original = app.read_controls
+            app.read_controls = lambda: _no_delay(original())
+            app.start()
+            deadline = time.time() + 30
+            while (app.job.is_alive() or not app.events.empty()) and time.time() < deadline:
+                app.update()
+                time.sleep(0.02)
+            for _ in range(5):
+                app.update()
+            rows = [app.table.item(i)["values"] for i in app.table.get_children()]
+            self.assertEqual([r[4] for r in rows], ["downloaded", "downloaded"])
+            self.assertTrue(app.status_label.cget("text").startswith("Done"))
+            app.on_close()
+            self.assertTrue((folder / "settings.json").exists())
+
+
+def _no_delay(settings):
+    settings.delay = 0
+    return settings
+
+
+if __name__ == "__main__":
+    unittest.main()
