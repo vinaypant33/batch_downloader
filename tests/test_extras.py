@@ -42,3 +42,17 @@ class TestLogging(unittest.TestCase):
         text = (Path(options.folder) / LOG_NAME).read_text(encoding="utf-8")
         self.assertIn("job started", text)
         self.assertIn("job finished", text)
+
+
+class TestRetryGivenFiles(unittest.TestCase):
+    def test_given_files_skip_the_crawl(self):
+        with TestServer() as server:
+            files = (FoundFile(server.base + "docs/deep.pdf", "documents", server.base, 0),)
+            options = JobOptions(url=server.base, folder=tempfile.mkdtemp(), delay=0, files=files)
+            events = queue.Queue()
+            DownloadJob(options, events).start()
+            out = drain(events)
+            self.assertEqual(server.requests["/"], 0)          # start page never fetched
+        kinds = [k for k, _ in out]
+        self.assertEqual(kinds.count("found"), 1)
+        self.assertEqual(out[-1][1]["statuses"], {"downloaded": 1})
