@@ -23,3 +23,12 @@ class TestLogging(unittest.TestCase):
         close_logging(folder)
         self.assertEqual(path.name, LOG_NAME)
         self.assertIn("hello log", path.read_text(encoding="utf-8"))
+
+    def test_setup_twice_adds_one_handler(self):
+        folder = Path(tempfile.mkdtemp())
+        setup_logging(folder)
+        setup_logging(folder)
+        handlers = [h for h in logging.getLogger("batch_downloader").handlers
+                    if isinstance(h, logging.FileHandler) and Path(h.baseFilename).parent == folder.resolve()]
+        self.assertEqual(len(handlers), 1)
+        close_logging(folder)
