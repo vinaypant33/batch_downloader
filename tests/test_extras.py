@@ -32,3 +32,13 @@ class TestLogging(unittest.TestCase):
                     if isinstance(h, logging.FileHandler) and Path(h.baseFilename).parent == folder.resolve()]
         self.assertEqual(len(handlers), 1)
         close_logging(folder)
+
+    def test_job_writes_a_log(self):
+        with TestServer() as server:
+            options = JobOptions(url=server.base, folder=tempfile.mkdtemp(), delay=0, categories=("documents",))
+            events = queue.Queue()
+            DownloadJob(options, events).start()
+            drain(events)
+        text = (Path(options.folder) / LOG_NAME).read_text(encoding="utf-8")
+        self.assertIn("job started", text)
+        self.assertIn("job finished", text)
