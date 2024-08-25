@@ -65,3 +65,53 @@ class TestVersion(unittest.TestCase):
             main(["--version"])
         self.assertEqual(ctx.exception.code, 0)
         self.assertIn(__version__, out.getvalue())
+
+
+@unittest.skipUnless(display_available(), "needs a display")
+class TestAppRetry(unittest.TestCase):
+    def test_failed_rows_can_be_retried(self):
+        import time
+
+        from batch_downloader.app import App
+        with TestServer() as server:
+            server.fail("/flaky/docs/report.pdf", times=3)    # first job fails, retry works
+            folder = Path(tempfile.mkdtemp())
+            app = App(settings_path=folder / "settings.json")
+            app.withdraw()
+            app.folder_entry.delete(0, "end")
+            app.folder_entry.insert(0, str(folder / "files"))
+            app.url_entry.insert(0, server.base + "broken.html")
+            for var in app.category_vars.values():
+                var.set(False)
+            app.category_vars["documents"].set(True)
+            app.depth_slider.set(0)
+            original = app.read_controls
+
+            def no_delay():
+                s = original()
+                s.delay = 0
+                return s
+
+            app.read_controls = no_delay
+
+            def wait():
+                deadline = time.time() + 40
+                while (app.job.is_alive() or not app.events.empty()) and time.time() < deadline:
+                    app.update()
+                    time.sleep(0.02)
+                for _ in range(5):
+                    app.update()
+
+            app.start()
+            wait()
+            self.assertEqual(app.retry_button.cget("state"), "normal")
+            self.assertIn("1 failed", app.totals_label.cget("text"))
+            app.retry_failed()
+            wait()
+            self.assertIn("1 downloaded", app.totals_label.cget("text"))
+            self.assertEqual(app.title(), "Batch Downloader")
+            app.on_close()
+
+
+if __name__ == "__main__":
+    unittest.main()
