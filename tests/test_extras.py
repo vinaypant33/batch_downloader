@@ -56,3 +56,12 @@ class TestRetryGivenFiles(unittest.TestCase):
         kinds = [k for k, _ in out]
         self.assertEqual(kinds.count("found"), 1)
         self.assertEqual(out[-1][1]["statuses"], {"downloaded": 1})
+
+
+class TestVersion(unittest.TestCase):
+    def test_version_flag(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), self.assertRaises(SystemExit) as ctx:
+            main(["--version"])
+        self.assertEqual(ctx.exception.code, 0)
+        self.assertIn(__version__, out.getvalue())
