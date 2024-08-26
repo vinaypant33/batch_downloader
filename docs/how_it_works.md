@@ -44,3 +44,11 @@ is complete, so an unfinished file never looks finished.
 | same name, different file | save as `name (1).ext` |
 | same SHA-256 as an earlier file | delete the new copy, record a "duplicate" |
 | over the size limit | skip before downloading the body |
+
+## Keeping the window responsive
+
+Crawling and downloading run on a `DownloadJob` thread. The thread never
+touches the window; it puts `(kind, payload)` events on a queue: `status`,
+`page`, `found`, `progress`, `result` and finally `done`. The window reads the
+queue every 100 ms and updates the table. Pause blocks the job inside
+`should_stop()`, which the crawler and every download check between steps.
