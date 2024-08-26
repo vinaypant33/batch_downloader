@@ -52,3 +52,9 @@ touches the window; it puts `(kind, payload)` events on a queue: `status`,
 `page`, `found`, `progress`, `result` and finally `done`. The window reads the
 queue every 100 ms and updates the table. Pause blocks the job inside
 `should_stop()`, which the crawler and every download check between steps.
+
+## Speed limit
+
+All download threads share one token bucket. Each chunk takes tokens equal to
+its size; when the bucket is empty the thread sleeps just long enough for the
+average speed to match the limit.
