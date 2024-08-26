@@ -28,3 +28,19 @@ The crawler does a breadth-first walk from the start page. For each page it:
 
 With `--sitemap`, pages listed in `/sitemap.xml` are added at depth 1, which
 finds pages that nothing links to.
+
+## Downloading
+
+Each file is streamed to `name.ext.part` and only renamed to `name.ext` when it
+is complete, so an unfinished file never looks finished.
+
+| Situation | What happens |
+|---|---|
+| a `.part` file exists | resume with `Range: bytes=N-`; if the server ignores it (200), start again |
+| server answers 416 | the `.part` file is already complete; finish it |
+| network error or 5xx | retry, waiting 1 s, 2 s, 4 s… |
+| 4xx | fail straight away, no retry |
+| same name, same size already saved | skip ("already downloaded") |
+| same name, different file | save as `name (1).ext` |
+| same SHA-256 as an earlier file | delete the new copy, record a "duplicate" |
+| over the size limit | skip before downloading the body |
