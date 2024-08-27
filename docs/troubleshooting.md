@@ -26,3 +26,8 @@ lower the number of parallel downloads, or set a speed limit, then use
 Run the same download again (or press **Retry failed**). The `.part` file is
 resumed from where it stopped if the server supports Range requests; if not,
 the file starts again from the beginning.
+
+## Where is the log?
+
+Each run writes `batch_downloader.log` in the download folder, with every page
+error, retry and failure.
