@@ -20,3 +20,9 @@ or pass `--ignore-robots`.
 The server is refusing or rate-limiting you. Increase the delay between pages,
 lower the number of parallel downloads, or set a speed limit, then use
 **Retry failed**.
+
+## A download stopped half way
+
+Run the same download again (or press **Retry failed**). The `.part` file is
+resumed from where it stopped if the server supports Range requests; if not,
+the file starts again from the beginning.
