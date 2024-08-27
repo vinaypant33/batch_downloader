@@ -14,3 +14,9 @@
 The site asked crawlers to stay out of those pages. Respect that for sites you
 do not own. For your own site or a test server, untick **Respect robots.txt**
 or pass `--ignore-robots`.
+
+## Downloads fail with HTTP 403 or 429
+
+The server is refusing or rate-limiting you. Increase the delay between pages,
+lower the number of parallel downloads, or set a speed limit, then use
+**Retry failed**.
