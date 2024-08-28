@@ -7,3 +7,13 @@ python -m venv .venv
 .venv\Scripts\activate          # or: source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+## Run the tests
+
+```
+python -m unittest -v
+```
+
+Tests never touch the internet: `tests/server.py` serves `tests/site/` on a
+random local port, with Range support and routes that fail (`/flaky/…`) or
+send slowly (`/slow/…`). Add pages or files there when a test needs them.
