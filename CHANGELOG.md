@@ -20,3 +20,9 @@
 - Retries with backoff for network and server errors
 - Shared speed limit
 - Duplicate files detected by SHA-256
+
+## 0.2.0
+
+- Working crawler: depth, same-site, robots.txt, Crawl-delay and sitemap.xml
+- File type, name pattern and size filters
+- Parallel downloads into one folder per file type
