@@ -26,3 +26,7 @@
 - Working crawler: depth, same-site, robots.txt, Crawl-delay and sitemap.xml
 - File type, name pattern and size filters
 - Parallel downloads into one folder per file type
+
+## 0.1.0 (April 2024)
+
+- First user interface experiments with ttkbootstrap and CustomTkinter
