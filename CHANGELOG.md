@@ -13,3 +13,10 @@
 - Pause, resume and stop
 - Dark and light themes for the window and the results table
 - "Only list files" mode
+
+## 0.3.0
+
+- Resumable downloads with HTTP Range requests
+- Retries with backoff for network and server errors
+- Shared speed limit
+- Duplicate files detected by SHA-256
