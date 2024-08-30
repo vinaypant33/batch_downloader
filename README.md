@@ -36,3 +36,22 @@ pip install -r requirements.txt
 ```
 
 This installs `requests`, `beautifulsoup4` and `customtkinter`.
+
+## Using the app
+
+```
+python main.py
+```
+
+1. Paste the website address.
+2. Tick the file types you want and set the depth.
+3. Choose the folder to save into.
+4. Optionally narrow it down: name patterns, maximum size, speed limit.
+5. Press **Find & Download**. Files appear in the table as they are found,
+   then each row shows its progress and result.
+
+Tick **Only list files** to see what would be downloaded without downloading
+anything. **History** shows everything downloaded into the chosen folder and
+**Export CSV** saves that list.
+
+Shortcuts: **Ctrl+Enter** starts, **Esc** stops, double-click opens a file.
