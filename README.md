@@ -26,3 +26,13 @@ into tidy folders: politely, in parallel, and able to resume where it left off.
 - A log file per folder, and settings are remembered between runs
 - Double-click a row to open the file; right-click to copy its link
 - Dark and light themes
+
+## Install
+
+Needs Python 3.9 or newer.
+
+```
+pip install -r requirements.txt
+```
+
+This installs `requests`, `beautifulsoup4` and `customtkinter`.
