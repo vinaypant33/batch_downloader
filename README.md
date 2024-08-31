@@ -81,3 +81,17 @@ python -m batch_downloader https://example.com/media --types videos --max-size 5
 
 The exit code is `0` on success, `1` if any download failed and `2` for an
 error such as an invalid address.
+
+## Where files go
+
+```
+<folder>/
+  documents/   report.pdf, Annual Summary.pdf
+  images/      logo.png
+  videos/      clip.mp4
+  audio/       song.mp3
+  archives/    data.zip
+  .batch_downloader.sqlite    download history
+```
+
+Partly downloaded files end in `.part` and are resumed next time.
