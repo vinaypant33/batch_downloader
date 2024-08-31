@@ -102,3 +102,26 @@ Only download content you are allowed to: check a site's terms of use and
 copyright before saving its files. The defaults respect `robots.txt` and wait
 between requests; `--ignore-robots` and a zero delay exist for your own sites
 and testing.
+
+## Project layout
+
+```
+main.py                     opens the app
+batch_downloader/
+  app.py          the window (CustomTkinter)
+  cli.py          command line
+  jobs.py         crawl + download on a background thread, reported as events
+  crawler.py      finds files: depth, same-site, robots.txt, sitemap
+  downloader.py   streams files: .part, resume, retries, duplicates
+  filters.py      type, name pattern and size rules
+  filetypes.py    extensions per category
+  robots.py       robots.txt cache
+  sitemap.py      sitemap.xml reader
+  ratelimit.py    shared speed limit (token bucket)
+  manifest.py     SQLite download history and CSV export
+  settings.py     remembered options
+  log.py          log file per download folder
+  urls.py         URL clean-up
+tests/            89 tests against a local test website
+docs/             how it works
+```
