@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "batch-downloader"
+version = "1.0.0"
+description = "Crawl a website and download the files it links to"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Vinay Pant" }]
+dependencies = ["requests>=2.31", "beautifulsoup4>=4.12", "customtkinter>=5.2"]
+
+[project.scripts]
+batch-downloader = "batch_downloader.cli:main"
+
+[project.gui-scripts]
+batch-downloader-app = "batch_downloader.app:run"
+
+[tool.setuptools]
+packages = ["batch_downloader"]
