@@ -125,3 +125,15 @@ batch_downloader/
 tests/            89 tests against a local test website
 docs/             how it works
 ```
+
+## Tests
+
+```
+python -m unittest
+```
+
+The tests start a small local web server (no internet needed) that also
+supports Range requests and can simulate failing and slow downloads. They are
+run on Windows and Linux for every push by GitHub Actions.
+
+More detail: [how it works](docs/how_it_works.md) · [troubleshooting](docs/troubleshooting.md) · [contributing](CONTRIBUTING.md) · [changelog](CHANGELOG.md)
