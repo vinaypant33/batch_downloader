@@ -95,3 +95,10 @@ error such as an invalid address.
 ```
 
 Partly downloaded files end in `.part` and are resumed next time.
+
+## Using it responsibly
+
+Only download content you are allowed to: check a site's terms of use and
+copyright before saving its files. The defaults respect `robots.txt` and wait
+between requests; `--ignore-robots` and a zero delay exist for your own sites
+and testing.
