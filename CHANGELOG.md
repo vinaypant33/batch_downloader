@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+
+Fixes found by testing on real websites (Wikimedia Commons):
+
+- Send the BatchDownloader user agent; the default `python-requests` one was
+  blocked with 403 by many sites
+- Download images and videos hosted on media servers / CDNs by default
+- Follow links that end in `.jpg` but are web pages, to reach the full-size file;
+  never save a web page under a file name
+- Retry *429 Too Many Requests*, honouring `Retry-After`; 4 retries by default
+- Remove tracking parameters (`utm_…`, `fbclid`) so one file has one address
+- Two links that save to the same file name no longer collide
+- Clear message when the start page cannot be loaded
+- The command line no longer crashes on file names a Windows console cannot show
+
 ## 1.0.0
 
 - Command line tool with every option of the app, and meaningful exit codes

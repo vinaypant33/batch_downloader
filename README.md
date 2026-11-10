@@ -14,8 +14,14 @@ into tidy folders: politely, in parallel, and able to resume where it left off.
   levels deep, staying on the same site
 - **Polite by default**: reads `robots.txt`, honours `Crawl-delay`, waits
   between pages and identifies itself with a clear user agent
+- **Works with media servers**: images and videos hosted on a separate server
+  or CDN (like `upload.wikimedia.org`) are found and downloaded
+- **Gets the full-size original**: links that end in `.jpg` but open a page
+  about the picture (Wikimedia's `File:` pages, many galleries) are followed
+  to the real file, and a web page is never saved under an image name
 - **Fast and safe downloads**: up to 8 at once, an optional speed limit,
-  automatic retries for network and server errors
+  automatic retries for network errors, server errors and *Too Many
+  Requests* (it waits as long as the site asks)
 - **Resumes interrupted downloads** using HTTP Range requests
 - **Never overwrites**: files already downloaded are skipped; a different file
   with the same name is saved as `name (1).ext`
@@ -76,6 +82,7 @@ python -m batch_downloader https://example.com/media --types videos --max-size 5
 | `--delay S` | seconds between page requests (default 0.5) |
 | `--sitemap` | also crawl pages listed in `sitemap.xml` |
 | `--any-site` | follow links to other websites |
+| `--same-site-files` | ignore files on media servers/CDNs |
 | `--flat` | one folder instead of one per type |
 | `--list` | list the files only |
 
@@ -95,6 +102,16 @@ error such as an invalid address.
 ```
 
 Partly downloaded files end in `.part` and are resumed next time.
+
+## What it cannot download
+
+- **Streaming video** such as YouTube, Netflix or `.m3u8` (HLS) streams: these
+  are not single files on a page. Use a dedicated tool for those.
+- Links that only appear after **JavaScript** runs, or content **behind a login**.
+
+Many sites offer several sizes of the same picture or video (e.g. `240p`,
+`480p`, `1080p`). Use name patterns to pick one, for example
+`--exclude "*240p*" "*360p*"` or `--include "*1080p*"`.
 
 ## Using it responsibly
 
@@ -122,7 +139,7 @@ batch_downloader/
   settings.py     remembered options
   log.py          log file per download folder
   urls.py         URL clean-up
-tests/            89 tests against a local test website
+tests/            98 tests against a local test website
 docs/             how it works
 ```
 

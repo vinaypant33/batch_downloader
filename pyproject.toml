@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "batch-downloader"
-version = "1.0.0"
+version = "1.1.0"
 description = "Crawl a website and download the files it links to"
 readme = "README.md"
 requires-python = ">=3.9"
