@@ -27,6 +27,15 @@ USER_AGENT = "BatchDownloader/1.0 (+https://github.com/vinaypant33/batch_downloa
 log = logging.getLogger(__name__)
 
 
+def ensure_user_agent(session, user_agent=USER_AGENT):
+    """Identify ourselves. A new requests.Session says "python-requests/x.y",
+    which many sites block, so replace that default but keep a custom one."""
+    current = session.headers.get("User-Agent", "")
+    if not current or current.startswith("python-requests"):
+        session.headers["User-Agent"] = user_agent
+    return session
+
+
 @dataclass(frozen=True)
 class FoundFile:
     url: str
@@ -50,17 +59,21 @@ LINK_ATTRIBUTES = (
 )
 
 
-def extract_links(html, base_url):
-    """Every absolute http(s) link on a page, in page order, without repeats."""
+def parse_links(html, base_url):
+    """(every link in page order without repeats, the subset that came from <a href>)."""
     soup = BeautifulSoup(html, "html.parser")
     base_tag = soup.find("base", href=True)
     base = normalize(base_tag["href"], base_url) if base_tag else base_url
-    links = []
+    links, anchors = [], set()
     for tag, attribute in LINK_ATTRIBUTES:
         for element in soup.find_all(tag):
             value = element.get(attribute)
             if value:
                 links.append(value)
+                if tag == "a":
+                    url = normalize(value, base)
+                    if url:
+                        anchors.add(url)
     for element in soup.find_all(srcset=True):        # responsive images
         for candidate in element["srcset"].split(","):
             if candidate.strip():
@@ -71,12 +84,17 @@ def extract_links(html, base_url):
         if url and url not in seen:
             seen.add(url)
             result.append(url)
-    return result
+    return result, anchors
+
+
+def extract_links(html, base_url):
+    """Every absolute http(s) link on a page, in page order, without repeats."""
+    return parse_links(html, base_url)[0]
 
 
 class Crawler:
     def __init__(self, start_url, depth=1, file_filter=None, same_site_only=True,
-                 offsite_files=False, delay=0.5, max_pages=200, respect_robots=True,
+                 offsite_files=True, delay=0.5, max_pages=200, respect_robots=True,
                  use_sitemap=False, session=None, timeout=15, user_agent=USER_AGENT):
         url = normalize(start_url)
         if url is None:
@@ -93,10 +111,10 @@ class Crawler:
         self.use_sitemap = use_sitemap
         self.timeout = timeout
         self.user_agent = user_agent
-        self.session = session or requests.Session()
-        self.session.headers.setdefault("User-Agent", user_agent)
+        self.session = ensure_user_agent(session or requests.Session(), user_agent)
         self.robots = RobotsCache(self.session, user_agent) if respect_robots else None
         self.stats = CrawlStats()
+        self._kind_cache = {}
 
     def _page_allowed(self, url):
         if self.same_site_only and not same_site(url, self.start_url):
@@ -115,6 +133,23 @@ class Crawler:
             self.stats.skipped_robots += 1
             return False
         return self.filter.accepts_url(url)
+
+    def _is_web_page(self, url):
+        """Ask the server (HEAD, no download) whether a file-looking link is really a page.
+
+        Sites such as Wikimedia link to '.../File:Photo.jpg', an HTML page about the
+        picture; the real image is linked from that page.
+        """
+        if url in self._kind_cache:
+            return self._kind_cache[url]
+        time.sleep(min(self.delay, 0.2))
+        try:
+            response = self.session.head(url, timeout=self.timeout, allow_redirects=True)
+            is_page = response.status_code < 400 and "html" in response.headers.get("Content-Type", "").lower()
+        except requests.RequestException:
+            is_page = False
+        self._kind_cache[url] = is_page
+        return is_page
 
     def _wait(self, url, first):
         if first:
@@ -170,9 +205,17 @@ class Crawler:
             if html is None:
                 continue
 
-            for link in extract_links(html, url):
+            links, anchors = parse_links(html, url)
+            for link in links:
                 if category_of(link):
-                    if link not in found and self._file_allowed(link):
+                    if (link in anchors and level < self.depth and link not in queued
+                            and self.filter.accepts_url(link)
+                            and (not self.same_site_only or same_site(link, self.start_url))
+                            and (not self.robots or self.robots.allowed(link))
+                            and self._is_web_page(link)):
+                        queued.add(link)               # looked like a file, is really a page
+                        queue.append((link, level + 1))
+                    elif link not in found and self._file_allowed(link):
                         found.add(link)
                         item = FoundFile(link, category_of(link), url, level)
                         files.append(item)

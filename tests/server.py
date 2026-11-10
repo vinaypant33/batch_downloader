@@ -30,13 +30,39 @@ class Handler(SimpleHTTPRequestHandler):
             key = self.path
             if self.server.failures.get(key, 0) > 0:
                 self.server.failures[key] -= 1
-                self.send_error(503, "try again")
+                status = self.server.fail_status.get(key, 503)
+                self.send_response(status)
+                self.send_header("Retry-After", "0")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
                 return
             self.path = "/" + self.path[len("/flaky/"):]
         if self.path.startswith("/slow/"):
             self.path = "/" + self.path[len("/slow/"):]
             return self.send_file(slow=True)
+        if self.path.startswith("/pages/"):
+            return self.send_page()
         return self.send_file()
+
+    def do_HEAD(self):
+        self.server.requests["HEAD " + self.path.split("?")[0]] += 1
+        if self.path.startswith("/pages/"):
+            return self.send_page(head=True)
+        return super().do_HEAD()
+
+    def send_page(self, head=False):
+        """/pages/<name>.jpg is an HTML page, the way Wikimedia's File: pages are."""
+        path = Path(self.translate_path(self.path + ".html"))
+        if not path.exists():
+            self.send_error(404, "not found")
+            return
+        body = path.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if not head:
+            self.wfile.write(body)
 
     def send_file(self, slow=False):
         path = Path(self.translate_path(self.path))
@@ -85,6 +111,7 @@ class TestServer:
         self.httpd.daemon_threads = True
         self.httpd.requests = Counter()
         self.httpd.failures = {}
+        self.httpd.fail_status = {}
         self.httpd.ranges = ranges
         self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
 
@@ -96,8 +123,9 @@ class TestServer:
     def requests(self):
         return self.httpd.requests
 
-    def fail(self, path, times):
+    def fail(self, path, times, status=503):
         self.httpd.failures[path] = times
+        self.httpd.fail_status[path] = status
 
     def __enter__(self):
         self.thread.start()

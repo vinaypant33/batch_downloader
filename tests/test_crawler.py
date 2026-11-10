@@ -2,7 +2,7 @@ import unittest
 
 import requests
 
-from batch_downloader.crawler import Crawler, extract_links
+from batch_downloader.crawler import Crawler, ensure_user_agent, extract_links
 from batch_downloader.filters import FileFilter
 from batch_downloader.robots import RobotsCache
 from batch_downloader.sitemap import parse_sitemap, sitemap_pages
@@ -42,13 +42,13 @@ class TestCrawler(unittest.TestCase):
         return crawler, crawler.crawl()
 
     def test_depth_zero_is_only_the_start_page(self):
-        crawler, files = self.crawl(depth=0)
+        crawler, files = self.crawl(depth=0, offsite_files=False)
         self.assertEqual(paths(files), ["docs/Annual%20Summary.pdf", "docs/report.pdf", "img/logo.png",
                                         "img/logo@2x.png", "media/clip.mp4"])
         self.assertEqual(crawler.stats.pages, 1)
 
     def test_each_depth_finds_more(self):
-        counts = [len(self.crawl(depth=d)[1]) for d in (0, 1, 2)]
+        counts = [len(self.crawl(depth=d, offsite_files=False)[1]) for d in (0, 1, 2)]
         self.assertEqual(counts, [5, 8, 9])
 
     def test_files_are_found_once(self):
@@ -56,14 +56,16 @@ class TestCrawler(unittest.TestCase):
         urls = [f.url for f in files]
         self.assertEqual(len(urls), len(set(urls)))
 
-    def test_offsite_links_are_skipped_by_default(self):
+    def test_offsite_pages_are_never_crawled(self):
         crawler, files = self.crawl(depth=1)
-        self.assertNotIn("outside.zip", " ".join(f.url for f in files))
+        self.assertFalse(any("other-site.example" in f.page for f in files))
         self.assertGreaterEqual(crawler.stats.skipped_offsite, 1)
 
-    def test_offsite_files_can_be_allowed(self):
-        _, files = self.crawl(depth=0, offsite_files=True)
+    def test_media_server_files_are_kept_by_default(self):
+        _, files = self.crawl(depth=0)
         self.assertIn("https://other-site.example/files/outside.zip", [f.url for f in files])
+        _, files = self.crawl(depth=0, offsite_files=False)
+        self.assertNotIn("https://other-site.example/files/outside.zip", [f.url for f in files])
 
     def test_robots_txt_is_respected(self):
         crawler, files = self.crawl(depth=0)
@@ -90,7 +92,7 @@ class TestCrawler(unittest.TestCase):
         crawler.crawl(on_page=lambda u, d: pages.append(d), on_file=found.append,
                       should_stop=lambda: len(pages) >= 1)
         self.assertEqual(pages, [0])
-        self.assertEqual(len(found), 5)
+        self.assertEqual(len(found), 6)   # 5 on the site + 1 on a media server
 
     def test_max_pages(self):
         crawler, _ = self.crawl(depth=5, max_pages=2)
@@ -100,6 +102,25 @@ class TestCrawler(unittest.TestCase):
         crawler = Crawler(self.server.base + "nope.html", depth=0, delay=0)
         self.assertEqual(crawler.crawl(), [])
         self.assertEqual(crawler.stats.errors, 1)
+
+    def test_file_looking_link_that_is_a_page_is_crawled(self):
+        crawler = Crawler(self.server.base + "gallery.html", depth=1, delay=0)
+        names = sorted(f.url.rsplit("/", 1)[1] for f in crawler.crawl())
+        self.assertEqual(names, ["sunset_full.jpg", "sunset_thumb.jpg"])
+        self.assertEqual(self.server.requests["HEAD /pages/sunset.jpg"], 1)
+
+    def test_last_level_does_not_check_links(self):
+        crawler = Crawler(self.server.base + "gallery.html", depth=0, delay=0)
+        names = sorted(f.url.rsplit("/", 1)[1] for f in crawler.crawl())
+        self.assertEqual(names, ["sunset.jpg", "sunset_thumb.jpg"])   # no depth left to look inside
+
+    def test_identifies_itself_instead_of_python_requests(self):
+        session = ensure_user_agent(requests.Session())
+        self.assertTrue(session.headers["User-Agent"].startswith("BatchDownloader/"))
+        custom = requests.Session()
+        custom.headers["User-Agent"] = "MyBot/2"
+        self.assertEqual(ensure_user_agent(custom).headers["User-Agent"], "MyBot/2")
+        self.assertTrue(Crawler(self.server.base).session.headers["User-Agent"].startswith("BatchDownloader/"))
 
     def test_bad_settings(self):
         with self.assertRaises(ValueError):
