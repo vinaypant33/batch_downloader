@@ -33,6 +33,7 @@ class TestDownloadJob(unittest.TestCase):
         cls.server.__exit__()
 
     def run_job(self, **kwargs):
+        kwargs.setdefault("offsite_files", False)   # the test site's off-site link has no real server
         options = JobOptions(url=self.server.base, folder=tempfile.mkdtemp(), delay=0, **kwargs)
         events = queue.Queue()
         job = DownloadJob(options, events)
@@ -94,6 +95,7 @@ class TestCli(unittest.TestCase):
         self.assertEqual(options.depth, 1)
         self.assertTrue(options.respect_robots)
         self.assertTrue(options.subfolders)
+        self.assertTrue(options.offsite_files)
         self.assertEqual(set(options.categories), set(ALL))
 
     def test_options_flags(self):

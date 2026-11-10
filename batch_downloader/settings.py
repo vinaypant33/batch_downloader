@@ -21,6 +21,7 @@ class Settings:
     speed_limit_kb: int = 0        # 0 = unlimited
     respect_robots: bool = True
     same_site_only: bool = True
+    offsite_files: bool = True     # allow files hosted on another server (CDN)
     use_sitemap: bool = False
     subfolders: bool = True
     include: str = ""              # comma separated patterns, e.g. "*report*, *2024*"

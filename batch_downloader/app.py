@@ -126,10 +126,12 @@ class App(ctk.CTk):
         self.speed_entry = self._labelled_entry(frame, "Speed limit (KB/s)", "0 = unlimited", 6, width=110)
         self.robots_var = tk.BooleanVar(value=True)
         self.same_site_var = tk.BooleanVar(value=True)
+        self.offsite_files_var = tk.BooleanVar(value=True)
         self.sitemap_var = tk.BooleanVar(value=False)
         self.list_only_var = tk.BooleanVar(value=False)
         for column, (text, var) in enumerate([
             ("Respect robots.txt", self.robots_var), ("Stay on this site", self.same_site_var),
+            ("Files from media servers", self.offsite_files_var),
             ("Use sitemap.xml", self.sitemap_var), ("Only list files", self.list_only_var),
         ]):
             ctk.CTkCheckBox(frame, text=text, variable=var).grid(
@@ -215,6 +217,7 @@ class App(ctk.CTk):
             self.speed_entry.insert(0, str(s.speed_limit_kb))
         self.robots_var.set(s.respect_robots)
         self.same_site_var.set(s.same_site_only)
+        self.offsite_files_var.set(s.offsite_files)
         self.sitemap_var.set(s.use_sitemap)
         self.theme_switch.set(s.theme if s.theme in ("dark", "light") else "dark")
 
@@ -233,6 +236,7 @@ class App(ctk.CTk):
             speed_limit_kb=number(self.speed_entry),
             respect_robots=self.robots_var.get(),
             same_site_only=self.same_site_var.get(),
+            offsite_files=self.offsite_files_var.get(),
             use_sitemap=self.sitemap_var.get(),
             include=self.include_entry.get().strip(),
             exclude=self.exclude_entry.get().strip(),
@@ -268,7 +272,8 @@ class App(ctk.CTk):
         options = JobOptions(
             url=s.last_url, folder=s.folder, categories=tuple(s.categories), depth=s.depth, delay=s.delay,
             workers=s.workers, speed_limit_kb=s.speed_limit_kb, respect_robots=s.respect_robots,
-            same_site_only=s.same_site_only, use_sitemap=s.use_sitemap, subfolders=s.subfolders,
+            same_site_only=s.same_site_only, offsite_files=s.offsite_files, use_sitemap=s.use_sitemap,
+            subfolders=s.subfolders,
             include=Settings.patterns(s.include), exclude=Settings.patterns(s.exclude),
             max_size_mb=s.max_size_mb, list_only=self.list_only_var.get(), files=tuple(files),
         )
@@ -335,6 +340,10 @@ class App(ctk.CTk):
             self.retry_button.configure(state="normal")
         if summary.get("error"):
             self.status_label.configure(text=f"Error: {summary['error']}")
+            return
+        if summary.get("page_errors") and not summary.get("pages"):
+            self.status_label.configure(
+                text="Could not load the page (blocked or unreachable). Details are in batch_downloader.log.")
             return
         counts = ", ".join(f"{n} {status}" for status, n in sorted(summary.get("statuses", {}).items()))
         word = "Stopped" if summary.get("stopped") else "Done"

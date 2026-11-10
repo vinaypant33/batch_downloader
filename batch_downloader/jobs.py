@@ -37,6 +37,7 @@ class JobOptions:
     speed_limit_kb: int = 0
     respect_robots: bool = True
     same_site_only: bool = True
+    offsite_files: bool = True     # images/videos on a CDN or media server
     use_sitemap: bool = False
     subfolders: bool = True
     include: tuple = ()
@@ -95,6 +96,7 @@ class DownloadJob(threading.Thread):
         o = self.options
         crawler = Crawler(
             o.url, depth=o.depth, file_filter=file_filter, same_site_only=o.same_site_only,
+            offsite_files=o.offsite_files,
             delay=o.delay, respect_robots=o.respect_robots, use_sitemap=o.use_sitemap, session=o.session,
         )
         self.emit("status", f"Crawling {crawler.start_url}")
@@ -148,7 +150,8 @@ class DownloadJob(threading.Thread):
                 summary.update(files=len(self.files))
             else:
                 stats = self.crawl(file_filter)
-                summary.update(files=len(self.files), pages=stats.pages, skipped_robots=stats.skipped_robots)
+                summary.update(files=len(self.files), pages=stats.pages, skipped_robots=stats.skipped_robots,
+                               page_errors=stats.errors)
             if self.files and not self.options.list_only and not self._stop_requested.is_set():
                 self.download(file_filter)
                 summary["statuses"] = dict(Counter(r.status for r in self.results))
