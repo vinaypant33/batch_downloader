@@ -22,6 +22,10 @@ class TestNormalize(unittest.TestCase):
             with self.subTest(link=link):
                 self.assertIsNone(normalize(link, "https://site.com/"))
 
+    def test_tracking_parameters_are_removed(self):
+        self.assertEqual(normalize("https://s.com/a.jpg?utm_source=x&w=800&fbclid=1"), "https://s.com/a.jpg?w=800")
+        self.assertEqual(normalize("https://s.com/a.jpg?utm_campaign=y"), "https://s.com/a.jpg")
+
     def test_empty_path_becomes_slash_and_query_is_kept(self):
         self.assertEqual(normalize("https://site.com"), "https://site.com/")
         self.assertEqual(normalize("/get?id=7", "https://site.com/a/"), "https://site.com/get?id=7")

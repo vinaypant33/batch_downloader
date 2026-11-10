@@ -1,9 +1,10 @@
 """URL clean-up and site checks used by the crawler."""
 
-from urllib.parse import urldefrag, urljoin, urlparse, urlunparse
+from urllib.parse import parse_qsl, urldefrag, urlencode, urljoin, urlparse, urlunparse
 
 PAGE_EXTENSIONS = ("", ".html", ".htm", ".php", ".asp", ".aspx", ".jsp", ".shtml")
 DEFAULT_PORTS = {"http": 80, "https": 443}
+TRACKING_PREFIXES = ("utm_", "fbclid", "gclid", "mc_cid", "mc_eid")
 
 
 def normalize(url, base=None):
@@ -26,7 +27,16 @@ def normalize(url, base=None):
     if parts.port and parts.port != DEFAULT_PORTS[scheme]:
         netloc = f"{host}:{parts.port}"
     path = parts.path or "/"
-    return urlunparse((scheme, netloc, path, parts.params, parts.query, ""))
+    return urlunparse((scheme, netloc, path, parts.params, strip_tracking(parts.query), ""))
+
+
+def strip_tracking(query):
+    """Drop tracking parameters (utm_source, fbclid, ...) so one file has one address."""
+    if not query:
+        return query
+    kept = [(k, v) for k, v in parse_qsl(query, keep_blank_values=True)
+            if not k.lower().startswith(TRACKING_PREFIXES)]
+    return urlencode(kept)
 
 
 def host_of(url):

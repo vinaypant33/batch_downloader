@@ -21,8 +21,11 @@ def now_iso():
 
 
 def shorten(text, width=60):
-    """Shorten long text in the middle: 'https://site/very…/file.pdf'."""
+    """Shorten long text in the middle: 'https://site/very.../file.pdf'.
+
+    Uses plain dots so it prints correctly in every Windows console.
+    """
     if len(text) <= width:
         return text
-    keep = (width - 1) // 2
-    return text[:keep] + "…" + text[-(width - 1 - keep):]
+    keep = (width - 3) // 2
+    return text[:keep] + "..." + text[-(width - 3 - keep):]
