@@ -7,6 +7,7 @@ Command line version, for scripts and servers without a screen.
 
 import argparse
 import queue
+import sys
 from collections import Counter
 
 from . import __version__
@@ -33,6 +34,8 @@ def build_parser():
     p.add_argument("--delay", type=float, default=0.5, help="seconds between page requests (default 0.5)")
     p.add_argument("--sitemap", action="store_true", help="also crawl pages listed in sitemap.xml")
     p.add_argument("--any-site", action="store_true", help="follow links to other websites too")
+    p.add_argument("--same-site-files", action="store_true",
+                   help="only download files hosted on the same site (default: also from media servers/CDNs)")
     p.add_argument("--ignore-robots", action="store_true", help="do not check robots.txt (use with care)")
     p.add_argument("--flat", action="store_true", help="save everything in one folder, not per type")
     p.add_argument("--list", action="store_true", help="only list the files that would be downloaded")
@@ -43,7 +46,7 @@ def options_from(args):
     return JobOptions(
         url=args.url, folder=args.out, categories=tuple(args.types), depth=args.depth, delay=args.delay,
         workers=args.workers, speed_limit_kb=args.speed_limit, respect_robots=not args.ignore_robots,
-        same_site_only=not args.any_site, use_sitemap=args.sitemap, subfolders=not args.flat,
+        same_site_only=not args.any_site, offsite_files=not args.same_site_files, use_sitemap=args.sitemap, subfolders=not args.flat,
         include=tuple(args.include), exclude=tuple(args.exclude), max_size_mb=args.max_size,
         list_only=args.list,
     )
@@ -61,7 +64,16 @@ def print_event(kind, payload):
         print(f"  {result.status:<10} {shorten(result.path or result.url, 80)}  {detail}")
 
 
+def make_console_safe(stream=None):
+    """Never crash on file names the console cannot show (e.g. 'ě' in a cp1252 window)."""
+    stream = stream or sys.stdout
+    if hasattr(stream, "reconfigure"):
+        stream.reconfigure(errors="replace")
+    return stream
+
+
 def main(argv=None):
+    make_console_safe()
     args = build_parser().parse_args(argv)
     events = queue.Queue()
     job = DownloadJob(options_from(args), events)
@@ -85,7 +97,11 @@ def main(argv=None):
         return 2
     counts = Counter(r.status for r in job.results)
     blocked = summary.get("skipped_robots", 0)
-    print(f"\n{summary['files']} files found on {summary['pages']} pages"
+    errors = summary.get("page_errors", 0)
+    if errors and not summary["pages"]:
+        print(f"\nCould not load the start page (blocked or unreachable). See batch_downloader.log in {args.out}")
+    pages = summary["pages"]
+    print(f"\n{summary['files']} files found on {pages} page{'' if pages == 1 else 's'}"
           + (f"; {blocked} link{'' if blocked == 1 else 's'} blocked by robots.txt" if blocked else ""))
     if counts:
         print("  " + ", ".join(f"{n} {status}" for status, n in sorted(counts.items())))

@@ -58,6 +58,20 @@ class TestRetryGivenFiles(unittest.TestCase):
         self.assertEqual(out[-1][1]["statuses"], {"downloaded": 1})
 
 
+class TestConsole(unittest.TestCase):
+    def test_foreign_file_names_do_not_crash_a_windows_console(self):
+        from batch_downloader.cli import make_console_safe, print_event
+        from batch_downloader.downloader import DownloadResult
+        raw = io.BytesIO()
+        console = io.TextIOWrapper(raw, encoding="cp1252")      # like an old Windows terminal
+        make_console_safe(console)
+        with contextlib.redirect_stdout(console):
+            print_event("result", (0, DownloadResult("https://s.com/Vodopád_Kněžna.webm", "downloaded",
+                                                     "Vodopád_Kněžna.webm", 2048)))
+        console.flush()
+        self.assertIn(b"Vodop", raw.getvalue())
+
+
 class TestVersion(unittest.TestCase):
     def test_version_flag(self):
         out = io.StringIO()
@@ -74,7 +88,7 @@ class TestAppRetry(unittest.TestCase):
 
         from batch_downloader.app import App
         with TestServer() as server:
-            server.fail("/flaky/docs/report.pdf", times=3)    # first job fails, retry works
+            server.fail("/flaky/docs/report.pdf", times=5)    # first job (5 attempts) fails, retry works
             folder = Path(tempfile.mkdtemp())
             app = App(settings_path=folder / "settings.json")
             app.withdraw()
