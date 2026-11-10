@@ -92,6 +92,20 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual(result.status, "downloaded")
         self.assertEqual(result.attempts, 3)
 
+    def test_too_many_requests_is_retried(self):
+        self.server.fail("/flaky/docs/report.pdf", times=2, status=429)
+        result = self.make(retries=3).download(found(self.server, "flaky/docs/report.pdf"))
+        self.assertEqual(result.status, "downloaded")
+        self.assertEqual(result.attempts, 3)
+
+    def test_retry_after_header(self):
+        from types import SimpleNamespace
+
+        from batch_downloader.downloader import retry_after_seconds
+        self.assertEqual(retry_after_seconds(SimpleNamespace(headers={"Retry-After": "7"})), 7.0)
+        self.assertEqual(retry_after_seconds(SimpleNamespace(headers={"Retry-After": "9999"})), 60.0)
+        self.assertIsNone(retry_after_seconds(SimpleNamespace(headers={})))
+
     def test_retries_give_up(self):
         self.server.fail("/flaky/docs/report.pdf", times=5)
         result = self.make(retries=1).download(found(self.server, "flaky/docs/report.pdf"))
@@ -164,6 +178,18 @@ class TestDownloader(unittest.TestCase):
         self.assertEqual([r.url for r in results], [f.url for f in files])
         self.assertEqual([r.status for r in results], ["downloaded", "failed", "downloaded"])
         self.assertEqual(sorted(seen), [0, 1, 2])
+
+    def test_web_page_is_never_saved_as_a_file(self):
+        result = self.make().download(found(self.server, "pages/sunset.jpg", "images"))
+        self.assertEqual(result.status, "skipped")
+        self.assertEqual(result.error, "web page, not a file")
+        self.assertFalse((self.folder / "images" / "sunset.jpg").exists())
+
+    def test_two_links_to_one_name_do_not_collide(self):
+        files = [found(self.server, "media/clip.mp4", "videos"), found(self.server, "slow/media/clip.mp4", "videos")]
+        results = self.make().download_all(files, workers=2)
+        self.assertEqual(sorted(r.status for r in results), ["downloaded", "skipped"])
+        self.assertEqual(len(list((self.folder / "videos").iterdir())), 1)
 
     def test_sha256_helper(self):
         path = self.folder / "x.bin"

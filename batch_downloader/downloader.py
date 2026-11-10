@@ -10,6 +10,7 @@ Failures caused by the network or a 5xx response are retried with backoff.
 import hashlib
 import logging
 import re
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -18,7 +19,7 @@ from urllib.parse import unquote, urlparse
 
 import requests
 
-from .crawler import USER_AGENT
+from .crawler import ensure_user_agent
 from .filters import FileFilter
 
 log = logging.getLogger(__name__)
@@ -40,7 +41,20 @@ class StopRequested(Exception):
 
 
 class _Retryable(Exception):
-    """A failure worth trying again (network problem or 5xx)."""
+    """A failure worth trying again (network problem, 5xx, or 429 Too Many Requests)."""
+
+    def __init__(self, message, wait=None):
+        super().__init__(message)
+        self.wait = wait           # seconds the server asked us to wait (Retry-After)
+
+
+MAX_RETRY_AFTER = 60.0
+
+
+def retry_after_seconds(response):
+    """The Retry-After header in seconds, capped so one server cannot stall us for long."""
+    value = response.headers.get("Retry-After", "").strip()
+    return min(float(value), MAX_RETRY_AFTER) if value.replace(".", "", 1).isdigit() else None
 
 
 INVALID_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
@@ -84,11 +98,10 @@ def sha256_of(path, chunk=1 << 20):
 
 class Downloader:
     def __init__(self, folder, session=None, subfolders=True, file_filter=None, timeout=30,
-                 retries=2, backoff=1.0, chunk_size=64 * 1024, rate_limiter=None, manifest=None,
+                 retries=4, backoff=1.0, chunk_size=64 * 1024, rate_limiter=None, manifest=None,
                  resume=True):
         self.folder = Path(folder)
-        self.session = session or requests.Session()
-        self.session.headers.setdefault("User-Agent", USER_AGENT)
+        self.session = ensure_user_agent(session or requests.Session())
         self.subfolders = subfolders
         self.filter = file_filter or FileFilter()
         self.timeout = timeout
@@ -98,6 +111,12 @@ class Downloader:
         self.rate_limiter = rate_limiter
         self.manifest = manifest
         self.resume = resume
+        self._locks = {}                 # one lock per target file name
+        self._locks_guard = threading.Lock()
+
+    def _lock_for(self, target):
+        with self._locks_guard:
+            return self._locks.setdefault(str(target).lower(), threading.Lock())
 
     def target_for(self, found):
         folder = self.folder / found.category if self.subfolders else self.folder
@@ -110,7 +129,9 @@ class Downloader:
         while True:
             attempt += 1
             try:
-                return self._download_once(found, attempt, on_progress, should_stop)
+                # two links that save to the same name must not write it at the same time
+                with self._lock_for(self.target_for(found)):
+                    return self._download_once(found, attempt, on_progress, should_stop)
             except StopRequested:
                 return DownloadResult(found.url, "stopped", attempts=attempt)
             except _Retryable as error:
@@ -118,7 +139,7 @@ class Downloader:
                     log.warning("giving up on %s after %d attempts: %s", found.url, attempt, error)
                     return DownloadResult(found.url, "failed", error=str(error), attempts=attempt)
                 log.info("retrying %s (attempt %d failed: %s)", found.url, attempt, error)
-                time.sleep(self.backoff * 2 ** (attempt - 1))
+                time.sleep(max(self.backoff * 2 ** (attempt - 1), error.wait or 0))
             except (requests.RequestException, OSError) as error:
                 log.warning("download of %s failed: %s", found.url, error)
                 return DownloadResult(found.url, "failed", error=str(error), attempts=attempt)
@@ -138,10 +159,15 @@ class Downloader:
             if response.status_code == 416:            # .part is already complete
                 response.close()
                 have, total, mode = have, have, None
-            elif response.status_code >= 500:
-                raise _Retryable(f"HTTP {response.status_code}")
+            elif response.status_code >= 500 or response.status_code == 429:
+                # 429 = the server is rate-limiting us: wait as long as it asks, then retry
+                raise _Retryable(f"HTTP {response.status_code}", wait=retry_after_seconds(response))
             elif response.status_code >= 400:
                 return DownloadResult(found.url, "failed", error=f"HTTP {response.status_code}", attempts=attempt)
+            elif "text/html" in response.headers.get("Content-Type", "").lower():
+                # e.g. '.../File:Photo.jpg' that is really a page about the photo:
+                # never save a web page under an image or video name
+                return DownloadResult(found.url, "skipped", error="web page, not a file", attempts=attempt)
             else:
                 resumed = response.status_code == 206 and have > 0
                 if not resumed:
