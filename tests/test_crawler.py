@@ -159,5 +159,24 @@ class TestRobotsAndSitemap(unittest.TestCase):
             self.assertIn("docs/hidden.pdf", paths(files))
 
 
+class TestRobotsRetry(unittest.TestCase):
+    def test_a_network_blip_does_not_switch_robots_off(self):
+        import requests
+        from unittest import mock
+        real_get = requests.Session.get
+        calls = []
+
+        def flaky_get(session, url, **kw):
+            calls.append(url)
+            if len(calls) == 1:
+                raise requests.ConnectionError("connection reset")
+            return real_get(session, url, **kw)
+
+        with TestServer() as server, mock.patch.object(requests.Session, "get", flaky_get):
+            robots = RobotsCache(requests.Session(), "test-agent")
+            self.assertFalse(robots.allowed(server.base + "private/secret.pdf"))
+        self.assertEqual(len(calls), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

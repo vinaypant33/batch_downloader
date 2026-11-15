@@ -107,6 +107,7 @@ class Handler(SimpleHTTPRequestHandler):
 class TestServer:
     def __init__(self, ranges=True):
         handler = functools.partial(Handler, directory=os.fspath(SITE))
+        ThreadingHTTPServer.request_queue_size = 64       # Windows refuses connections beyond a queue of 5
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
         self.httpd.daemon_threads = True
         self.httpd.requests = Counter()
